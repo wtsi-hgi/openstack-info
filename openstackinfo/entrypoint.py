@@ -1,12 +1,12 @@
 import json
 import os
-from typing import List
+from typing import List, Dict
 
 from novaclient.client import Client as NovaClient
 from novaclient.v2.servers import Server
 
-from osservers.models import Credentials
-from osservers.serialisation import ServerJSONEncoder
+from openstackinfo.models import Credentials
+from openstackinfo.serialisation import ServerJSONEncoder
 
 DEFAULT_NOVA_VERSION = "2"
 
@@ -32,6 +32,16 @@ def get_server_list(credentials: Credentials, nova_version: str=DEFAULT_NOVA_VER
         server.security_groups = security_groups
 
     return servers
+
+
+def get_data() -> Dict:
+    """
+    TODO
+    :return:
+    """
+    credentials = get_credentials_from_environment()
+    servers = get_server_list(credentials)
+    return ServerJSONEncoder().default(servers)
 
 
 def get_credentials_from_environment() -> Credentials:
