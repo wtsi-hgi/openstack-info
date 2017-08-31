@@ -1,2 +1,3 @@
-python-novaclient>=9.1.0
+openstacksdk>=0.9.18
 hgijson>=1.4.3
+python-novaclient>=9.1.0
