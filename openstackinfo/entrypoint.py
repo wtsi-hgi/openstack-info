@@ -1,35 +1,24 @@
 import json
 import os
+import sys
 from argparse import ArgumentParser
 
-import sys
-from typing import List, NamedTuple, Dict, Callable
+from typing import List, Dict, Callable, NamedTuple
 
-from openstackinfo import index_information_by_id
-from openstackinfo.gathers import get_openstack_info
-
-from openstackinfo.indexers import index_information_by_type
-from openstackinfo.models import Credentials
-from openstackinfo.serialisation import OpenstackJSONEncoder
+from openstackinfo import Credentials
+from openstackinfo.runners import INDEX_BY_TYPE, RunConfiguration, INDEX_BY_FUNCTIONS, get_information
 
 USERNAME_ENVIRONMENT_VARIABLE = "OS_USERNAME"
 PASSWORD_ENVIRONMENT_VARIABLE = "OS_PASSWORD"
 AUTH_URL_ENVIRONMENT_VARIABLE = "OS_AUTH_URL"
 TENANT_ENVIRONMENT_VARIABLE = "OS_TENANT_NAME"
 
-_INDEX_BY_TYPE_OPTION = "type"
-_INDEX_BY_ID_OPTION = "id"
-_INDEX_BY_FUNCTIONS = {
-    _INDEX_BY_TYPE_OPTION: index_information_by_type,
-    _INDEX_BY_ID_OPTION: index_information_by_id
-}
 
-
-class _Configuration(NamedTuple):
+class CliConfiguration(NamedTuple):
     """
-    Run configuration.
+    Cli configuration.
     """
-    index_by: Callable[[Dict], Dict] = _INDEX_BY_FUNCTIONS[_INDEX_BY_TYPE_OPTION]
+    index_by: Callable[[Dict], Dict] = None
 
 
 def get_credentials_from_environment() -> Credentials:
@@ -46,28 +35,26 @@ def get_credentials_from_environment() -> Credentials:
     )
 
 
-def _parse_arguments(argument_list: List[str]) -> _Configuration:
+def _parse_arguments(argument_list: List[str]) -> CliConfiguration:
     """
     Parse the given CLI arguments.
     :return: CLI arguments
     """
     parser = ArgumentParser(description="Openstack tenant information retriever")
-    parser.add_argument("-i", "--index", default=_INDEX_BY_TYPE_OPTION, choices=list(_INDEX_BY_FUNCTIONS.keys()),
+    parser.add_argument("-i", "--index", default=INDEX_BY_TYPE, choices=list(INDEX_BY_FUNCTIONS.keys()),
                         help="What the OpenStack information should be index by")
     arguments = parser.parse_args(argument_list)
-    return _Configuration(index_by=_INDEX_BY_FUNCTIONS[arguments.index])
+    return CliConfiguration(index_by=INDEX_BY_FUNCTIONS[arguments.index])
 
 
 def main():
     """
     Entrypoint.
     """
-    configuration = _parse_arguments(sys.argv[1:])
+    cli_configuration = _parse_arguments(sys.argv[1:])
     credentials = get_credentials_from_environment()
-    openstack_info = get_openstack_info(credentials)
-    openstack_info_as_json = OpenstackJSONEncoder().default(openstack_info)
-    indexed_openstack_info_as_json = configuration.index_by(openstack_info_as_json)
-    print(json.dumps(indexed_openstack_info_as_json, sort_keys=True, indent=4))
+    information = get_information(RunConfiguration(credentials=credentials, index_by=cli_configuration.index_by))
+    print(json.dumps(information, sort_keys=True, indent=4))
 
 
 if __name__ == "__main__":

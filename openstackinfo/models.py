@@ -5,16 +5,6 @@ from openstack.network.v2.security_group import SecurityGroup
 from typing import NamedTuple, List
 
 
-class Credentials(NamedTuple):
-    """
-    Credentials used to access OpenStack.
-    """
-    username: str
-    password: str
-    auth_url: str
-    tenant: str
-
-
 class Openstack():
     """
     Openstack information.
@@ -25,3 +15,13 @@ class Openstack():
         self.servers = servers if servers is not None else []
         self.security_groups = security_groups if security_groups is not None else []
         self.networks = networks if networks is not None else []
+
+
+class Credentials(NamedTuple):
+    """
+    Credentials used to access OpenStack.
+    """
+    username: str
+    password: str
+    auth_url: str
+    tenant: str

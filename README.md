@@ -128,9 +128,9 @@ openstackinfo --index id
 
 ### Python
 ```python
-from openstackinfo import get_openstack_info, Credentials
+from openstackinfo import get_information, RunConfiguration, Credentials, INDEX_BY_ID
 
-openstack_info = get_openstack_info(Credentials(username, password, auth_url, tenant))
+openstack_info = get_information(RunConfiguration(Credentials(username, password, auth_url, tenant), index_by=INDEX_BY_ID))
 ```
 
 
