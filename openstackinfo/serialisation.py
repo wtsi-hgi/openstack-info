@@ -30,19 +30,17 @@ security_group_mapping_schema = [
     JsonPropertyMapping("name", "name")
 ]
 SecurityGroupJSONEncoder = MappingJSONEncoderClassBuilder(SecurityGroup, security_group_mapping_schema).build()
-NovaSecurityGroupJSONEncoder = MappingJSONEncoderClassBuilder(NovaSecurityGroup, security_group_mapping_schema).build()
 
 
 server_mapping_schema = [
     JsonPropertyMapping("id", "id"),
     JsonPropertyMapping("name", "name"),
     JsonPropertyMapping("networks", "networks"),
-    JsonPropertyMapping("volumes_attached", object_property_getter=lambda server: [volume["id"] for volume in getattr(
-        server, "attached_volumes")]),
+    JsonPropertyMapping("volumes_attached", object_property_getter=lambda server: [volume["id"] for volume in server.attached_volumes]),
     JsonPropertyMapping("status", "status"),
     JsonPropertyMapping("created", "created_at"),
     JsonPropertyMapping("updated", "updated_at"),
-    JsonPropertyMapping("security_groups", "security_groups", encoder_cls=NovaSecurityGroupJSONEncoder),
+    JsonPropertyMapping("security_groups", object_property_getter=lambda server: [group.id for group in server.security_groups]),
     JsonPropertyMapping("metadata", "metadata")
 ]
 ServerJSONEncoder = MappingJSONEncoderClassBuilder(ServerDetail, server_mapping_schema).build()
