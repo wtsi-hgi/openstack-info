@@ -30,8 +30,6 @@ Then call:
 ```
 openstackinfo
 ```
-
-Example output:
 ```json
 {
     "instances": [
@@ -80,24 +78,10 @@ Example output:
 }
 ```
 
-### Python
-```python
-from openstackinfo import get_openstack_info, Credentials
-
-openstack_info = get_openstack_info(Credentials(username, password, auth_url, tenant))
+Optionally set what the information is index by using `-i` or `--index`:
+```bash
+openstackinfo --index id
 ```
-
-A helper function `index_information_by_id` exists to transform the JSON representation into a dictionary of resources 
-indexed by their UUID, where resources have an additional `type` property:
-```python
-import json
-from openstackinfo import index_information_by_id
-
-openstack_info_indexed_by_id = index_information_by_id(openstack_info)
-print(json.dumps(openstack_info_indexed_by_id, sort_keys=True, indent=4))
-```
-
-Example:
 ```json
 {
     "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd": {
@@ -140,6 +124,13 @@ Example:
         ]
     }
 }
+```
+
+### Python
+```python
+from openstackinfo import get_openstack_info, Credentials
+
+openstack_info = get_openstack_info(Credentials(username, password, auth_url, tenant))
 ```
 
 

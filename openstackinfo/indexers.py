@@ -13,13 +13,37 @@ RESOURCE_TYPE_MAPPINGS = {
 }
 
 
+def ensure_indexed_by_type(information_as_json: Dict):
+    """
+    TODO
+    :param information_as_json:
+    :return:
+    """
+    if not is_indexed_by_type(information_as_json):
+        raise ValueError("Can only re-index information already indexed by type")
+
+
+def is_indexed_by_type(information_as_json: Dict) -> bool:
+    """
+    Checks whether the given OpenStack information is indexed by type.
+    :param information_as_json: the OpenStack information as JSON
+    :return:
+    """
+    for key in RESOURCE_TYPE_MAPPINGS.keys():
+        if key not in information_as_json:
+            return False
+    return True
+
+
 def index_information_by_id(information_as_json: Dict) -> Dict:
     """
     Creates an alternate view of the information, where resources are indexed by ID and contain their type as a
     property.
-    :param information_as_json: the information as JSON
+    :param information_as_json: the OpenStack information as JSON, indexed by type
     :return: ID indexed information
     """
+    ensure_indexed_by_type(information_as_json)
+
     typed_resources: Dict = {}
     for type_key in information_as_json:
         resources_of_type = information_as_json[type_key]
@@ -28,3 +52,13 @@ def index_information_by_id(information_as_json: Dict) -> Dict:
             assert "id" in resource
             typed_resources[resource["id"]] = resource
     return typed_resources
+
+
+def index_information_by_type(information_as_json: Dict) -> Dict:
+    """
+    TODO
+    :param information_as_json:
+    :return:
+    """
+    ensure_indexed_by_type(information_as_json)
+    return information_as_json
