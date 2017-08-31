@@ -5,7 +5,7 @@ from openstack.network.v2.security_group import SecurityGroup
 from typing import NamedTuple, List
 
 
-class Openstack():
+class Openstack:
     """
     Openstack information.
     """

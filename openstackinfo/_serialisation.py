@@ -56,11 +56,13 @@ server_mapping_schema = [
     JsonPropertyMapping(ID_JSON_KEY, "id"),
     JsonPropertyMapping(NAME_JSON_KEY, "name"),
     JsonPropertyMapping(SERVER_NETWORKS_JSON_KEY, "networks"),
-    JsonPropertyMapping(SERVER_VOLUMES_JSON_KEY, object_property_getter=lambda server: [volume["id"] for volume in server.attached_volumes]),
+    JsonPropertyMapping(SERVER_VOLUMES_JSON_KEY,
+                        object_property_getter=lambda server: [volume["id"] for volume in server.attached_volumes]),
     JsonPropertyMapping(SERVER_STATUS_JSON_KEY, "status"),
     JsonPropertyMapping(SERVER_CREATED_AT_JSON_KEY, "created_at"),
     JsonPropertyMapping(SERVER_UPDATED_AT_JSON_KEY, "updated_at"),
-    JsonPropertyMapping(SERVER_SECURITY_GROUPS_JSON_KEY, object_property_getter=lambda server: [group.id for group in server.security_groups]),
+    JsonPropertyMapping(SERVER_SECURITY_GROUPS_JSON_KEY,
+                        object_property_getter=lambda server: [group.id for group in server.security_groups]),
     JsonPropertyMapping(SERVER_METADATA_JSON_KEY, "metadata")
 ]
 ServerJSONEncoder = MappingJSONEncoderClassBuilder(ServerDetail, server_mapping_schema).build()

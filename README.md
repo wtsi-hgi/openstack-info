@@ -130,7 +130,8 @@ openstackinfo --index id
 ```python
 from openstackinfo import get_information, RunConfiguration, Credentials, INDEX_BY_ID
 
-openstack_info = get_information(RunConfiguration(Credentials(username, password, auth_url, tenant), index_by=INDEX_BY_ID))
+configuration = RunConfiguration(credentials=Credentials(username, password, auth_url, tenant), index_by=INDEX_BY_ID)
+openstack_info = get_information(configuration)
 ```
 
 

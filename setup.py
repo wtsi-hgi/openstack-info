@@ -10,12 +10,12 @@ except ImportError:
 
 setup(
     name="openstackinfo",
-    version="1.0.0",
+    version="3.0.0",
     packages=find_packages(exclude=["tests"]),
     install_requires=open("requirements.txt", "r").readlines(),
     url="https://github.com/wtsi-hgi/openstack-info",
     license="MIT",
-    description="TODO",
+    description="Gets information about what is in an OpenStack tenant",
     long_description=read_markdown("README.md"),
     entry_points={
         "console_scripts": [
