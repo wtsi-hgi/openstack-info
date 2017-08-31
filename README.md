@@ -1,4 +1,5 @@
 # OpenStack Info
+_Gets information about what is in an OpenStack tenant._
 
 ## Installation
 Prerequisites:
@@ -16,12 +17,6 @@ pip install git+https://github.com/wtsi-hgi/openstack-info.git@master#egg=openst
 ```
 
 ## Usage
-### Python
-```python
-from openstackinfo import get_openstack_info, Credentials
-openstack_info = get_openstack_info(Credentials(username, password, auth_url, tenant))
-```
-
 ### CLI
 Set environment variables:
 ```bash
@@ -43,8 +38,10 @@ Example output:
         {
             "created": "2017-06-12T14:13:45Z",
             "id": "f875eb56-760f-49b4-950d-7c97c4418cf5",
-            "metadata": {},
-            "name": "consul-server-delta-hgi-03",
+            "metadata": {
+                "hello": "world"
+            },
+            "name": "some-server",
             "networks": [],
             "security_groups": [
                 "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd"
@@ -81,6 +78,12 @@ Example output:
         }
     ]
 }
+```
+
+### Python
+```python
+from openstackinfo import get_openstack_info, Credentials
+openstack_info = get_openstack_info(Credentials(username, password, auth_url, tenant))
 ```
 
 
