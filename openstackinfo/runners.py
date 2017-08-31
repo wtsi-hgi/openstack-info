@@ -1,3 +1,4 @@
+from munch import Munch
 from typing import NamedTuple, Dict, Callable
 
 from openstackinfo.models import Credentials
@@ -18,7 +19,7 @@ class RunConfiguration(NamedTuple):
     Run configuration.
     """
     credentials: Credentials
-    index_by: Callable[[Dict], Dict] = INDEX_BY_FUNCTIONS[INDEX_BY_TYPE]
+    indexer: Callable[[Dict], Dict] = INDEX_BY_FUNCTIONS[INDEX_BY_TYPE]
 
 
 def get_information(configuration: RunConfiguration) -> Dict:
@@ -28,6 +29,5 @@ def get_information(configuration: RunConfiguration) -> Dict:
     :return: information about OpenStack tenant
     """
     openstack_info = get_openstack_info(configuration.credentials)
-    openstack_info_as_json = OpenstackJSONEncoder().default(openstack_info)
-    indexed_openstack_info_as_json = configuration.index_by(openstack_info_as_json)
-    return indexed_openstack_info_as_json
+    indexed_openstack_info = configuration.indexer(openstack_info)
+    return indexed_openstack_info

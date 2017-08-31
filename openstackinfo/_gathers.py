@@ -1,28 +1,45 @@
-from novaclient.client import Client as NovaClient
-from novaclient.v2.servers import Server
-from openstack import profile
-from openstack.connection import Connection
-from typing import List
+import shade
+from Dict import Dict
+from shade import OpenStackCloud
+from typing import List, Dict
 
-from openstackinfo.models import Openstack, Credentials
+from openstackinfo.models import Credentials
 
-NOVA_VERSION = "2"
+ID_JSON_KEY = "id"
+# NAME_JSON_KEY = "name"
+TYPE_JSON_KEY = "type"
+
+OPENSTACK_INSTANCES_JSON_KEY = "instances"
+OPENSTACK_VOLUMES_JSON_KEY = "volumes"
+OPENSTACK_NETWORKS_JSON_KEY = "networks"
+OPENSTACK_SECURITY_GROUPS_JSON_KEY = "security_groups"
+
+# NETWORK_SUBNET_IDS_JSON_KEY = "subnet_ids"
+#
+# VOLUME_ATTACHED_TO_JSON_KEY = "attached_to"
+#
+# SERVER_NETWORKS_JSON_KEY = "networks"
+# SERVER_VOLUMES_JSON_KEY = "volumes_attached"
+# SERVER_STATUS_JSON_KEY = "status"
+# SERVER_CREATED_AT_JSON_KEY = "created"
+# SERVER_UPDATED_AT_JSON_KEY = "updated"
+# SERVER_SECURITY_GROUPS_JSON_KEY = "security_groups"
+# SERVER_METADATA_JSON_KEY = "metadata"
 
 _connection_cache = None
 
 
-def _get_connection(credentials: Credentials) -> Connection:
+def _get_shade_connection(credentials: Credentials) -> OpenStackCloud:
     """
-    Gets OpenStack SDK connection to OpenStack using the given credentials.
+    Gets `shade` connection to OpenStack using the given credentials.
 
     The connection is cached and shared.
     :param credentials: credentials used to access OpenStack API
-    :return: OpenStack SDK connection (may or may not be authorised)
+    :return: `shade` connection
     """
     global _connection_cache
     if _connection_cache is None:
-        _connection_cache = Connection(
-            profile=profile.Profile(),
+        _connection_cache = shade.openstack_cloud(
             auth_url=credentials.auth_url,
             project_name=credentials.tenant,
             username=credentials.username,
@@ -31,68 +48,55 @@ def _get_connection(credentials: Credentials) -> Connection:
     return _connection_cache
 
 
-def get_network_info(credentials: Credentials):
+def get_network_info(credentials: Credentials) -> List[Dict]:
     """
     Gets information about networks on OpenStack.
     :param credentials: credentials used to access OpenStack API
     :return: information about networks
     """
-    connection = _get_connection(credentials)
-    return list(connection.network.networks())
+    connection = _get_shade_connection(credentials)
+    return []
 
 
-def get_security_group_info(credentials: Credentials):
+def get_security_group_info(credentials: Credentials) -> List[Dict]:
     """
     Gets information about security groups on OpenStack.
     :param credentials: credentials used to access OpenStack API
     :return: information about security groups
     """
-    connection = _get_connection(credentials)
-    return list(connection.network.security_groups())
+    connection = _get_shade_connection(credentials)
+    return []
 
 
-def get_volume_info(credentials: Credentials):
+def get_volume_info(credentials: Credentials) -> List[Dict]:
     """
     Gets information about volumes (attached and unattached) on OpenStack.
     :param credentials: credentials used to access OpenStack API
     :return: information about volumes
     """
-    connection = _get_connection(credentials)
-    return list(connection.block_store.volumes())
+    connection = _get_shade_connection(credentials)
+    return []
 
 
-def get_server_info(credentials: Credentials) -> List[Server]:
+def get_server_info(credentials: Credentials) -> List[Dict]:
     """
     Gets information about servers on OpenStack.
     :param credentials: credentials used to access OpenStack API
     :return: information about servers
     """
-    connection = _get_connection(credentials)
-    servers = list(connection.compute.servers())
-
-    # Note: openstacksdk==0.9.18 does not offer a way to get the IDs of a security group associated to an instance: it
-    # incorrectly assumes that the name is unique.
-    nova_client = NovaClient(NOVA_VERSION, username=credentials.username, password=credentials.password,
-                             project_name=credentials.tenant, auth_url=credentials.auth_url)
-    for server in servers:
-        security_groups = nova_client.servers.list_security_group(server.id)
-        server.security_groups = security_groups
-
-        if server.networks is None:
-            server.networks = []
-
-    return servers
+    connection = _get_shade_connection(credentials)
+    return connection.list_servers(detailed=True)
 
 
-def get_openstack_info(credentials: Credentials) -> Openstack:
+def get_openstack_info(credentials: Credentials) -> Dict:
     """
     Gets information about OpenStack.
     :param credentials: credentials used to access OpenStack API
     :return: information about OpenStack
     """
-    return Openstack(
-        servers=get_server_info(credentials),
-        volumes=get_volume_info(credentials),
-        security_groups=get_security_group_info(credentials),
-        networks=get_network_info(credentials)
-    )
+    return {
+        OPENSTACK_INSTANCES_JSON_KEY: get_server_info(credentials),
+        OPENSTACK_VOLUMES_JSON_KEY: get_volume_info(credentials),
+        OPENSTACK_NETWORKS_JSON_KEY: get_security_group_info(credentials),
+        OPENSTACK_SECURITY_GROUPS_JSON_KEY: get_network_info(credentials)
+    }

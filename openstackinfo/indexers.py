@@ -1,7 +1,7 @@
 from typing import Dict
 
-from openstackinfo._serialisation import OPENSTACK_SECURITY_GROUPS_JSON_KEY, OPENSTACK_INSTANCES_JSON_KEY, \
-    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY
+from openstackinfo._gathers import OPENSTACK_SECURITY_GROUPS_JSON_KEY, OPENSTACK_INSTANCES_JSON_KEY, \
+    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, TYPE_JSON_KEY, ID_JSON_KEY
 
 RESOURCE_TYPE_MAPPINGS = {
     OPENSTACK_SECURITY_GROUPS_JSON_KEY: "security_group",
@@ -37,6 +37,8 @@ def index_information_by_id(information_as_json: Dict) -> Dict:
     """
     Creates an alternate view of the information, where resources are indexed by ID and contain their type as a
     property.
+
+    The original information is not altered.
     :param information_as_json: the OpenStack information as JSON (only indexed by type supported)
     :return: ID indexed information
     """
@@ -46,15 +48,17 @@ def index_information_by_id(information_as_json: Dict) -> Dict:
     for type_key in information_as_json:
         resources_of_type = information_as_json[type_key]
         for resource in resources_of_type:
-            resource["type"] = RESOURCE_TYPE_MAPPINGS[type_key]
-            assert "id" in resource
-            typed_resources[resource["id"]] = resource
+            resource[TYPE_JSON_KEY] = RESOURCE_TYPE_MAPPINGS[type_key]
+            assert ID_JSON_KEY in resource
+            typed_resources[resource[ID_JSON_KEY]] = resource
     return typed_resources
 
 
 def index_information_by_type(information_as_json: Dict) -> Dict:
     """
     Creates a view of the information, indexed by type.
+
+    The original information is not altered.
     :param information_as_json: the information (only indexed by type supported)
     :return: type indexed information
     """
