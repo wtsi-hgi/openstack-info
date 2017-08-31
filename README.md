@@ -83,7 +83,63 @@ Example output:
 ### Python
 ```python
 from openstackinfo import get_openstack_info, Credentials
+
 openstack_info = get_openstack_info(Credentials(username, password, auth_url, tenant))
+```
+
+A helper function `index_information_by_id` exists to transform the JSON representation into a dictionary of resources 
+indexed by their UUID, where resources have an additional `type` property:
+```python
+import json
+from openstackinfo import index_information_by_id
+
+openstack_info_indexed_by_id = index_information_by_id(openstack_info)
+print(json.dumps(openstack_info_indexed_by_id, sort_keys=True, indent=4))
+```
+
+Example:
+```json
+{
+    "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd": {
+        "id": "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd",
+        "name": "ssh",
+        "type": "security_group"
+    },
+    "97365eaf-1d88-4d20-81a0-2ece5de5525c": {
+        "id": "97365eaf-1d88-4d20-81a0-2ece5de5525c",
+        "name": "hgi",
+        "subnet_ids": [
+            "ec0aa86b-b89b-40bd-b2c9-540e82ec54c9"
+        ],
+        "type": "network"
+    },
+    "9b88ef64-d686-4ae4-9db8-c649adbe2ac9": {
+        "attached_to": [
+            "f875eb56-760f-49b4-950d-7c97c4418cf5"
+        ],
+        "id": "9b88ef64-d686-4ae4-9db8-c649adbe2ac9",
+        "name": "data",
+        "type": "volume"
+    },
+    "f875eb56-760f-49b4-950d-7c97c4418cf5": {
+        "created": "2017-06-12T14:13:45Z",
+        "id": "f875eb56-760f-49b4-950d-7c97c4418cf5",
+        "metadata": {
+            "hello": "world"
+        },
+        "name": "some-server",
+        "networks": [],
+        "security_groups": [
+            "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd"
+        ],
+        "status": "ACTIVE",
+        "type": "instance",
+        "updated": "2017-06-12T14:14:35Z",
+        "volumes_attached": [
+            "9b88ef64-d686-4ae4-9db8-c649adbe2ac9"
+        ]
+    }
+}
 ```
 
 

@@ -1,2 +1,3 @@
 from openstackinfo.gather import get_openstack_info
 from openstackinfo.models import Credentials
+from openstackinfo.helpers import index_information_by_id
