@@ -1,26 +1,69 @@
 import unittest
 
-from openstackinfo.schema import validate, ValidationError, INDEX_BY_TYPE_SCHEMA
-from openstackinfo.tests._common import INFORMATION_INDEXED_BY_TYPE
+from openstackinfo.schema import IndexedByTypeValidator, IndexedByIdValidator, Validator, ValidationError
+from openstackinfo.tests._common import INFORMATION_INDEXED_BY_TYPE, INFORMATION_INDEXED_BY_ID
 
 
-class TestValidate(unittest.TestCase):
+class TestValidator(unittest.TestCase):
     """
-    Tests for `validate`.
+    Tests for `Validator`.
     """
-    def test_valid(self):
-        validate("hello", {"type": "string"})
+    def setUp(self):
+        self.valid = None
+        self.validator: Validator = type(
+            "DummyValidator", (Validator, ), {"get_validity": lambda validator, information: (self.valid, None)})()
 
-    def test_invalid(self):
-        self.assertRaises(ValidationError, validate, 123, {"type": "string"})
+    def test_is_valid_when_true(self):
+        self.valid = True
+        self.assertTrue(self.validator.is_valid({}))
+
+    def test_is_valid_when_false(self):
+        self.valid = False
+        self.assertFalse(self.validator.is_valid({}))
+
+    def test_ensure_valid_when_valid(self):
+        self.valid = True
+        self.validator.ensure_valid({})
+
+    def test_ensure_valid_when_invalid(self):
+        self.valid = False
+        self.assertRaises(ValidationError, self.validator.ensure_valid, {})
 
 
-class TestSchemas(unittest.TestCase):
+class TestIndexedByIdValidator(unittest.TestCase):
     """
-    Tests that the schemas are correct, according to the test data.
+    Tests for `IndexedByIdValidator`.
     """
-    def test_index_by_type_schema(self):
-        validate(INFORMATION_INDEXED_BY_TYPE, INDEX_BY_TYPE_SCHEMA)
+    def setUp(self):
+        self.validator = IndexedByIdValidator()
+
+    def test_get_validity_when_valid(self):
+        valid, reason = self.validator.get_validity(INFORMATION_INDEXED_BY_ID)
+        self.assertTrue(valid)
+        self.assertIsNone(reason)
+
+    def test_get_validity_when_invalid(self):
+        valid, reason = self.validator.get_validity(INFORMATION_INDEXED_BY_TYPE)
+        self.assertFalse(valid)
+        self.assertIsNotNone(reason)
+
+
+class TestIndexedByTypeValidator(unittest.TestCase):
+    """
+    Tests for `IndexedByTypeValidator`.
+    """
+    def setUp(self):
+        self.validator = IndexedByTypeValidator()
+
+    def test_get_validity_when_valid(self):
+        valid, reason = self.validator.get_validity(INFORMATION_INDEXED_BY_TYPE)
+        self.assertTrue(valid)
+        self.assertIsNone(reason)
+
+    def test_get_validity_when_invalid(self):
+        valid, reason = self.validator.get_validity(INFORMATION_INDEXED_BY_ID)
+        self.assertFalse(valid)
+        self.assertIsNotNone(reason)
 
 
 if __name__ == "__main__":

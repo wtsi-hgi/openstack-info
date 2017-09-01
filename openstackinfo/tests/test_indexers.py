@@ -1,7 +1,7 @@
 import unittest
 
 from openstackinfo.indexers import InformationIndexerByType, UnsupportedIndexingError, InformationIndexerById
-from openstackinfo.schema import validate, INDEX_BY_TYPE_SCHEMA
+from openstackinfo.schema import IndexedByTypeValidator, IndexedByIdValidator
 from openstackinfo.tests._common import INFORMATION_INDEXED_BY_TYPE, INFORMATION_INDEXED_BY_ID
 
 
@@ -17,7 +17,8 @@ class TestInformationIndexerById(unittest.TestCase):
 
     def test_when_indexed_by_type(self):
         information = self.indexer.index(INFORMATION_INDEXED_BY_TYPE)
-        # TODO: Assert correct!
+        valid, reason = IndexedByIdValidator().get_validity(information)
+        self.assertTrue(valid, msg=reason)
 
 
 class TestInformationIndexerByType(unittest.TestCase):
@@ -32,7 +33,8 @@ class TestInformationIndexerByType(unittest.TestCase):
 
     def test_when_indexed_by_type(self):
         information = self.indexer.index(INFORMATION_INDEXED_BY_TYPE)
-        validate(information, INDEX_BY_TYPE_SCHEMA)
+        valid, reason = IndexedByTypeValidator().get_validity(information)
+        self.assertTrue(valid, msg=reason)
 
 
 if __name__ == "__main__":

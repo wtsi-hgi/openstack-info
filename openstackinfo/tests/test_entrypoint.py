@@ -32,9 +32,6 @@ class TestParseArguments(unittest.TestCase):
     """
     Tests for `parse_arguments`.
     """
-    def test_when_invalid_arguments(self):
-        self.assertRaises(Exception, parse_arguments, "--invalid")
-
     def test_when_valid_arguments(self):
         configuration = parse_arguments([LONG_INDEX_CLI_PARAMETER, INDEX_BY_ID])
         self.assertEqual(configuration.indexer, InformationIndexerById)

@@ -1,3 +1,10 @@
 {
-
+    "instances": [{
+        "name": "example",
+        "id": "some-id",
+        "type": "instance"
+    }],
+    "volumes": [],
+    "networks": [],
+    "security_groups": []
 }

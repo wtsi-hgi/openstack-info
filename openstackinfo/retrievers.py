@@ -1,4 +1,4 @@
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
 import shade
 from shade import OpenStackCloud
@@ -6,7 +6,7 @@ from typing import List, Dict
 
 from openstackinfo.models import Credentials
 from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, \
-    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, validate, INDEX_BY_TYPE_SCHEMA
+    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator
 
 
 class InformationRetriever(metaclass=ABCMeta):
@@ -19,9 +19,10 @@ class InformationRetriever(metaclass=ABCMeta):
         :return: validated information about OpenStack
         """
         information = self._get_openstack_info()
-        validate(information, INDEX_BY_TYPE_SCHEMA)
+        assert IndexedByTypeValidator().get_validity(information)
         return information
 
+    @abstractmethod
     def _get_openstack_info(self) -> Dict:
         """
         Gets information about OpenStack without validation.
@@ -98,7 +99,7 @@ class DummyInformationRetriever(InformationRetriever):
     Dummy implementation.
     """
     def __init__(self, information: Dict=None):
-        self.information = information if information else None
+        self.information = information if information is not None else None
 
     def _get_openstack_info(self) -> Dict:
         return self.information

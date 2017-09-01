@@ -1,9 +1,9 @@
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
 from typing import Dict
 
-from openstackinfo.schema import ID_JSON_KEY, TYPE_JSON_KEY, RESOURCE_TYPE_MAPPINGS, validate, INDEX_BY_TYPE_SCHEMA, \
-    ValidationError
+from openstackinfo.schema import ID_JSON_KEY, TYPE_JSON_KEY, RESOURCE_TYPE_MAPPINGS, \
+    ValidationError, IndexedByTypeValidator, IndexedByIdValidator, Validator
 
 
 class UnsupportedIndexingError(ValueError):
@@ -16,6 +16,7 @@ class InformationIndexer(metaclass=ABCMeta):
     """
     Indexes information in a way defined by this class.
     """
+    @abstractmethod
     def index(self, information: Dict):
         """
         Index the given information in the way defined by this class.
@@ -23,15 +24,15 @@ class InformationIndexer(metaclass=ABCMeta):
         :return: the indexed information
         """
 
-    def ensure_information_schema(self, information: Dict, schema: Dict):
+    def ensure_valid(self, information: Dict, validator: Validator):
         """
-        Ensures that the given information complies with the given schema in order for indexing to proceed.
-        :param information: the information to check
-        :param schema: the schema to enforce
-        :raises CannotIndexInFormError: raised if the given information does not comply to the given schema
+        Ensures that the given information validates with the given validator else it cannot be indexed.
+        :param information: to check
+        :param validator: to perform the validation
+        :raises CannotIndexInFormError: raised if the given information does not validate
         """
         try:
-            validate(information, schema)
+            validator.ensure_valid(information)
         except ValidationError:
             raise UnsupportedIndexingError(information)
 
@@ -41,7 +42,7 @@ class InformationIndexerById(InformationIndexer):
     Indexes the information by ID.
     """
     def index(self, information: Dict):
-        self.ensure_information_schema(information, INDEX_BY_TYPE_SCHEMA)
+        self.ensure_valid(information, IndexedByTypeValidator())
         typed_resources: Dict = {}
         for type_key in information:
             resources_of_type = information[type_key]
@@ -49,7 +50,7 @@ class InformationIndexerById(InformationIndexer):
                 resource[TYPE_JSON_KEY] = RESOURCE_TYPE_MAPPINGS[type_key]
                 assert ID_JSON_KEY in resource
                 typed_resources[resource[ID_JSON_KEY]] = resource
-        # assert self.ensure_information_schema(information, INDEX_BY_ID_SCHEMA)
+        assert IndexedByIdValidator().get_validity(typed_resources)
         return typed_resources
 
 
@@ -58,6 +59,6 @@ class InformationIndexerByType(InformationIndexer):
     Indexes the information by type.
     """
     def index(self, information: Dict):
-        self.ensure_information_schema(information, INDEX_BY_TYPE_SCHEMA)
+        self.ensure_valid(information, IndexedByTypeValidator())
         return information
 
