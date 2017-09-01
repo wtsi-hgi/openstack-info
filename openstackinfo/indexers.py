@@ -6,7 +6,7 @@ from openstackinfo.schema import ID_JSON_KEY, TYPE_JSON_KEY, RESOURCE_TYPE_MAPPI
     ValidationError
 
 
-class CannotIndexInFormError(ValueError):
+class UnsupportedIndexingError(ValueError):
     """
     Raised when the indexer cannot be used as the information is indexed already but in an unsupported way.
     """
@@ -33,7 +33,7 @@ class InformationIndexer(metaclass=ABCMeta):
         try:
             validate(information, schema)
         except ValidationError:
-            raise CannotIndexInFormError(information)
+            raise UnsupportedIndexingError(information)
 
 
 class InformationIndexerById(InformationIndexer):

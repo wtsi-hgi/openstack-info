@@ -9,7 +9,7 @@ from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES
     OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, validate, INDEX_BY_TYPE_SCHEMA
 
 
-class InformationGatherer(metaclass=ABCMeta):
+class InformationRetriever(metaclass=ABCMeta):
     """
     Gather of information from OpenStack about a tenant.
     """
@@ -29,18 +29,7 @@ class InformationGatherer(metaclass=ABCMeta):
         """
 
 
-class DummyInformationGatherer(InformationGatherer):
-    """
-    Dummy information gatherer implementation.
-    """
-    def __init__(self):
-        self.information: Dict = {}
-
-    def _get_openstack_info(self) -> Dict:
-        return self.information
-
-
-class ShadeInformationGatherer(InformationGatherer):
+class ShadeInformationRetriever(InformationRetriever):
     """
     Gets information about OpenStack tenant using the `shade` library.
     """
@@ -102,3 +91,14 @@ class ShadeInformationGatherer(InformationGatherer):
         :return: information about servers
         """
         return self._connection.list_servers(detailed=True)
+
+
+class DummyInformationRetriever(InformationRetriever):
+    """
+    Dummy implementation.
+    """
+    def __init__(self, information: Dict=None):
+        self.information = information if information else None
+
+    def _get_openstack_info(self) -> Dict:
+        return self.information

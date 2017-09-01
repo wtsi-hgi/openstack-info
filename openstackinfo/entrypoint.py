@@ -3,10 +3,12 @@ import os
 import sys
 from argparse import ArgumentParser
 
-from typing import List, Dict, Callable, NamedTuple
+from typing import List, Dict, NamedTuple, Type
 
+from openstackinfo.helpers import RunConfiguration, get_information
+from openstackinfo.indexers import InformationIndexerByType, InformationIndexerById
 from openstackinfo.models import Credentials
-from openstackinfo.runners import INDEX_BY_TYPE, RunConfiguration, INDEXER_MAP, get_information
+from openstackinfo.retrievers import ShadeInformationRetriever, InformationRetriever
 
 USERNAME_ENVIRONMENT_VARIABLE = "OS_USERNAME"
 PASSWORD_ENVIRONMENT_VARIABLE = "OS_PASSWORD"
@@ -16,12 +18,19 @@ TENANT_ENVIRONMENT_VARIABLE = "OS_TENANT_NAME"
 SHORT_INDEX_CLI_PARAMETER = "-i"
 LONG_INDEX_CLI_PARAMETER = "--index"
 
+INDEX_BY_TYPE = "type"
+INDEX_BY_ID = "id"
+INDEXER_MAP: Dict[str, Type[InformationRetriever]] = {
+    INDEX_BY_TYPE: InformationIndexerByType,
+    INDEX_BY_ID: InformationIndexerById
+}
+
 
 class CliConfiguration(NamedTuple):
     """
-    Cli configuration.
+    CLI configuration.
     """
-    indexer: Callable[[Dict], Dict]
+    indexer: Type[InformationRetriever]
 
 
 def get_credentials_from_environment() -> Credentials:
@@ -56,7 +65,8 @@ def main():
     """
     cli_configuration = parse_arguments(sys.argv[1:])
     credentials = get_credentials_from_environment()
-    information = get_information(RunConfiguration(credentials=credentials, indexer=cli_configuration.indexer))
+    retriever = ShadeInformationRetriever(credentials)
+    information = get_information(RunConfiguration(retriever=retriever, indexer=cli_configuration.indexer))
     print(json.dumps(information, sort_keys=True, indent=4))
 
 
