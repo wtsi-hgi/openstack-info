@@ -70,21 +70,21 @@ class ShadeInformationRetriever(InformationRetriever):
         Gets information about networks on OpenStack.
         :return: information about networks
         """
-        return []
+        return self._connection.list_networks()
 
     def get_security_group_info(self) -> List[Dict]:
         """
         Gets information about security groups on OpenStack.
         :return: information about security groups
         """
-        return []
+        return self._connection.list_security_groups()
 
     def get_volume_info(self) -> List[Dict]:
         """
         Gets information about volumes (attached and unattached) on OpenStack.
         :return: information about volumes
         """
-        return []
+        return self._connection.list_volumes()
 
     def get_server_info(self) -> List[Dict]:
         """
