@@ -26,7 +26,7 @@ class ValidationError(ValueError):
 
 class Validator(metaclass=ABCMeta):
     """
-    TODO
+    Validates information formatted as JSON.
     """
     def ensure_valid(self, information: Dict):
         """
@@ -40,25 +40,25 @@ class Validator(metaclass=ABCMeta):
 
     def is_valid(self, information: Dict) -> bool:
         """
-        TODO
-        :param information:
-        :return:
+        Checks whether the given information is valid.
+        :param information: to validate
+        :return: `True` if valid
         """
         return self.get_validity(information)[0]
 
     @abstractmethod
     def get_validity(self, information: Dict) -> Tuple[bool, str]:
         """
-        TODO
+        Gets the validity of the information, along with a reasoning for this (if any).
         :param information:
-        :return:
+        :return: tuple where the first element is a boolean, where `True` indicates the information is valid and the
+        second element is a human readable string indicating why the information is valid or not
         """
 
 
 class IndexedByTypeValidator(Validator):
     """
-    TODO
-    :return:
+    Validates whether information is indexed by type.
     """
     def get_validity(self, information: Dict):
         for key in RESOURCE_TYPE_MAPPINGS.keys():
@@ -69,8 +69,7 @@ class IndexedByTypeValidator(Validator):
 
 class IndexedByIdValidator(Validator):
     """
-    TODO
-    :return:
+    Validates whether information is indexed by ID.
     """
     def get_validity(self, information: Dict):
         for key, resource in information.items():
