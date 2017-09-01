@@ -12,4 +12,3 @@ with open(os.path.join(RESOURCES_PATH, "information-indexed-by-type.json"), "r")
     INFORMATION_INDEXED_BY_TYPE = json.load(file)
 with open(os.path.join(RESOURCES_PATH, "information-indexed-by-id.json"), "r") as file:
     INFORMATION_INDEXED_BY_ID = json.load(file)
-

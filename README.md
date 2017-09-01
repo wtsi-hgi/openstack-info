@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/wtsi-hgi/openstack-info.svg?branch=master)](https://travis-ci.org/wtsi-hgi/openstack-info)
+[![codecov](https://codecov.io/gh/wtsi-hgi/openstack-info/branch/master/graph/badge.svg)](https://codecov.io/gh/wtsi-hgi/openstack-info)
+
+
 # OpenStack Info
 _Gets information about what is in an OpenStack tenant._
 
