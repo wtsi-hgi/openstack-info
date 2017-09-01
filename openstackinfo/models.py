@@ -1,16 +1,7 @@
-from typing import NamedTuple, List, Dict
+from typing import NamedTuple, List, Dict, Type
 
-
-class Openstack:
-    """
-    Openstack information.
-    """
-    def __init__(self, volumes: List[Dict]=None, servers: List[Dict]=None,
-                 security_groups: List[Dict]=None, networks: List[Dict]=None):
-        self.volumes = volumes if volumes is not None else []
-        self.servers = servers if servers is not None else []
-        self.security_groups = security_groups if security_groups is not None else []
-        self.networks = networks if networks is not None else []
+from openstackinfo.indexers import InformationIndexer, InformationIndexerByType
+from openstackinfo.retrievers import InformationRetriever
 
 
 class Credentials(NamedTuple):
@@ -21,3 +12,11 @@ class Credentials(NamedTuple):
     password: str
     auth_url: str
     tenant: str
+
+
+class RunConfiguration(NamedTuple):
+    """
+    Run configuration.
+    """
+    retriever: InformationRetriever
+    indexer: Type[InformationIndexer] = InformationIndexerByType

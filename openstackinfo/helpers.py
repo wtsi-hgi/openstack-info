@@ -1,15 +1,6 @@
-from typing import NamedTuple, Dict, Type
+from typing import Dict
 
-from openstackinfo.indexers import InformationIndexerByType, InformationIndexer
-from openstackinfo.retrievers import InformationRetriever
-
-
-class RunConfiguration(NamedTuple):
-    """
-    Run configuration.
-    """
-    retriever: InformationRetriever
-    indexer: Type[InformationIndexer] = InformationIndexerByType
+from openstackinfo.models import RunConfiguration
 
 
 def get_information(configuration: RunConfiguration) -> Dict:

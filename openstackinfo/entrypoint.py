@@ -5,9 +5,9 @@ from argparse import ArgumentParser
 
 from typing import List, Dict, NamedTuple, Type
 
-from openstackinfo.helpers import RunConfiguration, get_information
+from openstackinfo.helpers import get_information
 from openstackinfo.indexers import InformationIndexerByType, InformationIndexerById
-from openstackinfo.models import Credentials
+from openstackinfo.models import Credentials, RunConfiguration
 from openstackinfo.retrievers import ShadeInformationRetriever, InformationRetriever
 
 USERNAME_ENVIRONMENT_VARIABLE = "OS_USERNAME"
