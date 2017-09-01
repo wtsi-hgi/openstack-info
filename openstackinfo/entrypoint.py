@@ -5,20 +5,23 @@ from argparse import ArgumentParser
 
 from typing import List, Dict, Callable, NamedTuple
 
-from openstackinfo import Credentials
-from openstackinfo.runners import INDEX_BY_TYPE, RunConfiguration, INDEXABLE_BY, get_information
+from openstackinfo.models import Credentials
+from openstackinfo.runners import INDEX_BY_TYPE, RunConfiguration, INDEXER_MAP, get_information
 
 USERNAME_ENVIRONMENT_VARIABLE = "OS_USERNAME"
 PASSWORD_ENVIRONMENT_VARIABLE = "OS_PASSWORD"
 AUTH_URL_ENVIRONMENT_VARIABLE = "OS_AUTH_URL"
 TENANT_ENVIRONMENT_VARIABLE = "OS_TENANT_NAME"
 
+SHORT_INDEX_CLI_PARAMETER = "-i"
+LONG_INDEX_CLI_PARAMETER = "--index"
+
 
 class CliConfiguration(NamedTuple):
     """
     Cli configuration.
     """
-    index_by: Callable[[Dict], Dict]
+    indexer: Callable[[Dict], Dict]
 
 
 def get_credentials_from_environment() -> Credentials:
@@ -35,25 +38,25 @@ def get_credentials_from_environment() -> Credentials:
     )
 
 
-def _parse_arguments(argument_list: List[str]) -> CliConfiguration:
+def parse_arguments(argument_list: List[str]) -> CliConfiguration:
     """
     Parse the given CLI arguments.
     :return: CLI arguments
     """
     parser = ArgumentParser(description="Openstack tenant information retriever")
-    parser.add_argument("-i", "--index", default=INDEX_BY_TYPE, choices=list(INDEXABLE_BY.keys()),
-                        help="What the OpenStack information should be index by")
+    parser.add_argument(SHORT_INDEX_CLI_PARAMETER, LONG_INDEX_CLI_PARAMETER, default=INDEX_BY_TYPE,
+                        choices=list(INDEXER_MAP.keys()), help="What the OpenStack information should be index by")
     arguments = parser.parse_args(argument_list)
-    return CliConfiguration(index_by=INDEXABLE_BY[arguments.index])
+    return CliConfiguration(indexer=INDEXER_MAP[arguments.index])
 
 
 def main():
     """
     Entrypoint.
     """
-    cli_configuration = _parse_arguments(sys.argv[1:])
+    cli_configuration = parse_arguments(sys.argv[1:])
     credentials = get_credentials_from_environment()
-    information = get_information(RunConfiguration(credentials=credentials, indexer=cli_configuration.index_by))
+    information = get_information(RunConfiguration(credentials=credentials, indexer=cli_configuration.indexer))
     print(json.dumps(information, sort_keys=True, indent=4))
 
 

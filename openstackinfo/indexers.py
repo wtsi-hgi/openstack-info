@@ -1,66 +1,63 @@
+from abc import ABCMeta
+
 from typing import Dict
 
-from openstackinfo._gathers import OPENSTACK_SECURITY_GROUPS_JSON_KEY, OPENSTACK_INSTANCES_JSON_KEY, \
-    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, TYPE_JSON_KEY, ID_JSON_KEY
-
-RESOURCE_TYPE_MAPPINGS = {
-    OPENSTACK_SECURITY_GROUPS_JSON_KEY: "security_group",
-    OPENSTACK_INSTANCES_JSON_KEY: "instance",
-    OPENSTACK_NETWORKS_JSON_KEY: "network",
-    OPENSTACK_VOLUMES_JSON_KEY: "volume"
-}
+from openstackinfo.schema import ID_JSON_KEY, TYPE_JSON_KEY, RESOURCE_TYPE_MAPPINGS, validate, INDEX_BY_TYPE_SCHEMA, \
+    ValidationError
 
 
-def ensure_indexed_by_type(information: Dict):
+class CannotIndexInFormError(ValueError):
     """
-    Ensures the given information is indexed by type.
-    :param information: the information
-    :raises ValueError: if the information is not indexed by type
+    Raised when the indexer cannot be used as the information is indexed already but in an unsupported way.
     """
-    if not is_indexed_by_type(information):
-        raise ValueError("Can only re-index information already indexed by type")
 
 
-def is_indexed_by_type(information_as_json: Dict) -> bool:
+class InformationIndexer(metaclass=ABCMeta):
     """
-    Checks whether the given OpenStack information is indexed by type.
-    :param information_as_json: the OpenStack information as JSON
-    :return: whether the information is indexed by type
+    Indexes information in a way defined by this class.
     """
-    for key in RESOURCE_TYPE_MAPPINGS.keys():
-        if key not in information_as_json:
-            return False
-    return True
+    def index(self, information: Dict):
+        """
+        Index the given information in the way defined by this class.
+        :param information: the information to index (not modified)
+        :return: the indexed information
+        """
+
+    def ensure_information_schema(self, information: Dict, schema: Dict):
+        """
+        Ensures that the given information complies with the given schema in order for indexing to proceed.
+        :param information: the information to check
+        :param schema: the schema to enforce
+        :raises CannotIndexInFormError: raised if the given information does not comply to the given schema
+        """
+        try:
+            validate(information, schema)
+        except ValidationError:
+            raise CannotIndexInFormError(information)
 
 
-def index_information_by_id(information: Dict) -> Dict:
+class InformationIndexerById(InformationIndexer):
     """
-    Creates an alternate view of the information, where resources are indexed by ID and contain their type as a
-    property.
-
-    The original information is not altered.
-    :param information: the OpenStack information as JSON (only indexed by type supported)
-    :return: ID indexed information
+    Indexes the information by ID.
     """
-    ensure_indexed_by_type(information)
+    def index(self, information: Dict):
+        self.ensure_information_schema(information, INDEX_BY_TYPE_SCHEMA)
+        typed_resources: Dict = {}
+        for type_key in information:
+            resources_of_type = information[type_key]
+            for resource in resources_of_type:
+                resource[TYPE_JSON_KEY] = RESOURCE_TYPE_MAPPINGS[type_key]
+                assert ID_JSON_KEY in resource
+                typed_resources[resource[ID_JSON_KEY]] = resource
+        # assert self.ensure_information_schema(information, INDEX_BY_ID_SCHEMA)
+        return typed_resources
 
-    typed_resources: Dict = {}
-    for type_key in information:
-        resources_of_type = information[type_key]
-        for resource in resources_of_type:
-            resource[TYPE_JSON_KEY] = RESOURCE_TYPE_MAPPINGS[type_key]
-            assert ID_JSON_KEY in resource
-            typed_resources[resource[ID_JSON_KEY]] = resource
-    return typed_resources
 
-
-def index_information_by_type(information: Dict) -> Dict:
+class InformationIndexerByType(InformationIndexer):
     """
-    Creates a view of the information, indexed by type.
-
-    The original information is not altered.
-    :param information: the information (only indexed by type supported)
-    :return: type indexed information
+    Indexes the information by type.
     """
-    ensure_indexed_by_type(information)
-    return information
+    def index(self, information: Dict):
+        self.ensure_information_schema(information, INDEX_BY_TYPE_SCHEMA)
+        return information
+
