@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from typing import List, Dict, Callable, NamedTuple
 
 from openstackinfo import Credentials
-from openstackinfo.runners import INDEX_BY_TYPE, RunConfiguration, INDEX_BY_FUNCTIONS, get_information
+from openstackinfo.runners import INDEX_BY_TYPE, RunConfiguration, INDEXABLE_BY, get_information
 
 USERNAME_ENVIRONMENT_VARIABLE = "OS_USERNAME"
 PASSWORD_ENVIRONMENT_VARIABLE = "OS_PASSWORD"
@@ -18,7 +18,7 @@ class CliConfiguration(NamedTuple):
     """
     Cli configuration.
     """
-    index_by: Callable[[Dict], Dict] = None
+    index_by: Callable[[Dict], Dict]
 
 
 def get_credentials_from_environment() -> Credentials:
@@ -41,10 +41,10 @@ def _parse_arguments(argument_list: List[str]) -> CliConfiguration:
     :return: CLI arguments
     """
     parser = ArgumentParser(description="Openstack tenant information retriever")
-    parser.add_argument("-i", "--index", default=INDEX_BY_TYPE, choices=list(INDEX_BY_FUNCTIONS.keys()),
+    parser.add_argument("-i", "--index", default=INDEX_BY_TYPE, choices=list(INDEXABLE_BY.keys()),
                         help="What the OpenStack information should be index by")
     arguments = parser.parse_args(argument_list)
-    return CliConfiguration(index_by=INDEX_BY_FUNCTIONS[arguments.index])
+    return CliConfiguration(index_by=INDEXABLE_BY[arguments.index])
 
 
 def main():
@@ -53,7 +53,7 @@ def main():
     """
     cli_configuration = _parse_arguments(sys.argv[1:])
     credentials = get_credentials_from_environment()
-    information = get_information(RunConfiguration(credentials=credentials, index_by=cli_configuration.index_by))
+    information = get_information(RunConfiguration(credentials=credentials, indexer=cli_configuration.index_by))
     print(json.dumps(information, sort_keys=True, indent=4))
 
 

@@ -11,13 +11,13 @@ RESOURCE_TYPE_MAPPINGS = {
 }
 
 
-def ensure_indexed_by_type(information_as_json: Dict):
+def ensure_indexed_by_type(information: Dict):
     """
     Ensures the given information is indexed by type.
-    :param information_as_json: the information
+    :param information: the information
     :raises ValueError: if the information is not indexed by type
     """
-    if not is_indexed_by_type(information_as_json):
+    if not is_indexed_by_type(information):
         raise ValueError("Can only re-index information already indexed by type")
 
 
@@ -33,20 +33,20 @@ def is_indexed_by_type(information_as_json: Dict) -> bool:
     return True
 
 
-def index_information_by_id(information_as_json: Dict) -> Dict:
+def index_information_by_id(information: Dict) -> Dict:
     """
     Creates an alternate view of the information, where resources are indexed by ID and contain their type as a
     property.
 
     The original information is not altered.
-    :param information_as_json: the OpenStack information as JSON (only indexed by type supported)
+    :param information: the OpenStack information as JSON (only indexed by type supported)
     :return: ID indexed information
     """
-    ensure_indexed_by_type(information_as_json)
+    ensure_indexed_by_type(information)
 
     typed_resources: Dict = {}
-    for type_key in information_as_json:
-        resources_of_type = information_as_json[type_key]
+    for type_key in information:
+        resources_of_type = information[type_key]
         for resource in resources_of_type:
             resource[TYPE_JSON_KEY] = RESOURCE_TYPE_MAPPINGS[type_key]
             assert ID_JSON_KEY in resource
@@ -54,13 +54,13 @@ def index_information_by_id(information_as_json: Dict) -> Dict:
     return typed_resources
 
 
-def index_information_by_type(information_as_json: Dict) -> Dict:
+def index_information_by_type(information: Dict) -> Dict:
     """
     Creates a view of the information, indexed by type.
 
     The original information is not altered.
-    :param information_as_json: the information (only indexed by type supported)
+    :param information: the information (only indexed by type supported)
     :return: type indexed information
     """
-    ensure_indexed_by_type(information_as_json)
-    return information_as_json
+    ensure_indexed_by_type(information)
+    return information

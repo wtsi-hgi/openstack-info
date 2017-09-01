@@ -1,5 +1,4 @@
 import shade
-from Dict import Dict
 from shade import OpenStackCloud
 from typing import List, Dict
 

@@ -31,51 +31,7 @@ Then call:
 openstackinfo
 ```
 ```json
-{
-    "instances": [
-        {
-            "created": "2017-06-12T14:13:45Z",
-            "id": "f875eb56-760f-49b4-950d-7c97c4418cf5",
-            "metadata": {
-                "hello": "world"
-            },
-            "name": "some-server",
-            "networks": [],
-            "security_groups": [
-                "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd"
-            ],
-            "status": "ACTIVE",
-            "updated": "2017-06-12T14:14:35Z",
-            "volumes_attached": [
-                "9b88ef64-d686-4ae4-9db8-c649adbe2ac9"
-            ]
-        }
-    ],
-    "networks": [
-        {
-            "id": "97365eaf-1d88-4d20-81a0-2ece5de5525c",
-            "name": "hgi",
-            "subnet_ids": [
-                "ec0aa86b-b89b-40bd-b2c9-540e82ec54c9"
-            ]
-        }
-    ],
-    "security_groups": [
-        {
-            "id": "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd",
-            "name": "ssh"
-        }
-    ],
-    "volumes": [
-        {
-            "attached_to": [
-                "f875eb56-760f-49b4-950d-7c97c4418cf5"
-            ],
-            "id": "9b88ef64-d686-4ae4-9db8-c649adbe2ac9",
-            "name": "data"
-        }
-    ]
-}
+TODO
 ```
 
 Optionally set what the information is index by using `-i` or `--index`:
@@ -83,58 +39,19 @@ Optionally set what the information is index by using `-i` or `--index`:
 openstackinfo --index id
 ```
 ```json
-{
-    "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd": {
-        "id": "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd",
-        "name": "ssh",
-        "type": "security_group"
-    },
-    "97365eaf-1d88-4d20-81a0-2ece5de5525c": {
-        "id": "97365eaf-1d88-4d20-81a0-2ece5de5525c",
-        "name": "hgi",
-        "subnet_ids": [
-            "ec0aa86b-b89b-40bd-b2c9-540e82ec54c9"
-        ],
-        "type": "network"
-    },
-    "9b88ef64-d686-4ae4-9db8-c649adbe2ac9": {
-        "attached_to": [
-            "f875eb56-760f-49b4-950d-7c97c4418cf5"
-        ],
-        "id": "9b88ef64-d686-4ae4-9db8-c649adbe2ac9",
-        "name": "data",
-        "type": "volume"
-    },
-    "f875eb56-760f-49b4-950d-7c97c4418cf5": {
-        "created": "2017-06-12T14:13:45Z",
-        "id": "f875eb56-760f-49b4-950d-7c97c4418cf5",
-        "metadata": {
-            "hello": "world"
-        },
-        "name": "some-server",
-        "networks": [],
-        "security_groups": [
-            "2a258c8f-f4c9-45e6-bcba-48cead5e5fcd"
-        ],
-        "status": "ACTIVE",
-        "type": "instance",
-        "updated": "2017-06-12T14:14:35Z",
-        "volumes_attached": [
-            "9b88ef64-d686-4ae4-9db8-c649adbe2ac9"
-        ]
-    }
-}
+TODO
 ```
 
 ### Python
 ```python
 from openstackinfo import get_information, RunConfiguration, Credentials, INDEX_BY_ID
 
-configuration = RunConfiguration(credentials=Credentials(username, password, auth_url, tenant), index_by=INDEX_BY_ID)
+configuration = RunConfiguration(credentials=Credentials(username, password, auth_url, tenant), indexer=INDEX_BY_ID)
 openstack_info = get_information(configuration)
 ```
 
 
 ## Alternatives
+- [shade](https://pypi.python.org/pypi/shade/) (underlying library: no CLI, no re-indexing).
 - [Nova CLI](https://docs.openstack.org/python-novaclient/latest/cli/nova.html) (does not return JSON).
 - [Openstack CLI](https://docs.openstack.org/python-openstackclient/latest/cli/) (does not return server metadata).
