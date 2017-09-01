@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = .
+omit =
+    openstackinfo/tests/*
+parallel = True
