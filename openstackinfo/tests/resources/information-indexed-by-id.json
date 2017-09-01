@@ -1,0 +1,7 @@
+{
+    "some-id": {
+        "name": "example",
+        "id": "some-id",
+        "type": "instance"
+    }
+}
