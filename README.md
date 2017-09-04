@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/wtsi-hgi/openstack-info.svg?branch=master)](https://travis-ci.org/wtsi-hgi/openstack-info)
 [![codecov](https://codecov.io/gh/wtsi-hgi/openstack-info/branch/master/graph/badge.svg)](https://codecov.io/gh/wtsi-hgi/openstack-info)
 
-
 # OpenStack Info
 _Gets information about what is in an OpenStack tenant._
+
 
 ## Installation
 Prerequisites:
@@ -20,6 +20,7 @@ or using pip:
 pip install git+https://github.com/wtsi-hgi/openstack-info.git@master#egg=openstackinfo
 ```
 
+
 ## Usage
 ### CLI
 Set environment variables:
@@ -34,24 +35,21 @@ Then call:
 ```
 openstackinfo
 ```
-```json
-TODO
-```
 
 Optionally set what the information is index by using `-i` or `--index`:
 ```bash
 openstackinfo --index id
-```
-```json
-TODO
 ```
 
 ### Python
 ```python
 from openstackinfo.models import RunConfiguration, Credentials
 from openstackinfo.helpers import get_information
+from openstackinfo.retrievers import ShadeInformationRetriever
+from openstackinfo.indexers import InformationIndexerByType
 
-configuration = RunConfiguration(credentials=Credentials(username, password, auth_url, tenant), indexer=INDEX_BY_ID)
+retriever = ShadeInformationRetriever(credentials=Credentials(username, password, auth_url, tenant))
+configuration = RunConfiguration(retriever=retriever, indexer=InformationIndexerByType)
 openstack_info = get_information(configuration)
 ```
 
