@@ -6,9 +6,9 @@ from argparse import ArgumentParser
 from typing import List, Dict, NamedTuple, Type
 
 from openstackinfo.helpers import get_information
-from openstackinfo.indexers import InformationIndexerByType, InformationIndexerById
+from openstackinfo.indexers import InformationIndexerByType, InformationIndexerById, InformationIndexer
 from openstackinfo.models import Credentials, RunConfiguration
-from openstackinfo.retrievers import ShadeInformationRetriever, InformationRetriever
+from openstackinfo.retrievers import ShadeInformationRetriever
 
 USERNAME_ENVIRONMENT_VARIABLE = "OS_USERNAME"
 PASSWORD_ENVIRONMENT_VARIABLE = "OS_PASSWORD"
@@ -20,7 +20,7 @@ LONG_INDEX_CLI_PARAMETER = "--index"
 
 INDEX_BY_TYPE = "type"
 INDEX_BY_ID = "id"
-INDEXER_MAP: Dict[str, Type[InformationRetriever]] = {
+INDEXER_MAP: Dict[str, Type[InformationIndexer]] = {
     INDEX_BY_TYPE: InformationIndexerByType,
     INDEX_BY_ID: InformationIndexerById
 }
@@ -30,7 +30,7 @@ class CliConfiguration(NamedTuple):
     """
     CLI configuration.
     """
-    indexer: Type[InformationRetriever]
+    indexer: Type[InformationIndexer]
 
 
 def get_credentials_from_environment() -> Credentials:
