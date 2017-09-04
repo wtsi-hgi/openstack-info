@@ -48,7 +48,8 @@ TODO
 
 ### Python
 ```python
-from openstackinfo import get_information, RunConfiguration, Credentials, INDEX_BY_ID
+from openstackinfo.models import RunConfiguration, Credentials
+from openstackinfo.helpers import get_information
 
 configuration = RunConfiguration(credentials=Credentials(username, password, auth_url, tenant), indexer=INDEX_BY_ID)
 openstack_info = get_information(configuration)
