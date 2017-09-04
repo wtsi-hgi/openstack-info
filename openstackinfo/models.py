@@ -19,4 +19,4 @@ class RunConfiguration(NamedTuple):
     from openstackinfo.retrievers import InformationRetriever
 
     retriever: InformationRetriever
-    indexer: Type[InformationIndexer] = InformationIndexerByType
+    indexer: InformationIndexer = InformationIndexerByType()

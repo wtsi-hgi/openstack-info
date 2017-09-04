@@ -51,7 +51,7 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
         choices=[item.value for item in IndexBy], help="What the OpenStack information should be index by")
     arguments = parser.parse_args(argument_list)
     index_by = IndexBy(arguments.index)
-    return CliConfiguration(indexer=INDEXER_MAP[index_by])
+    return CliConfiguration(indexer=INDEXER_MAP[index_by]())
 
 
 def main():
