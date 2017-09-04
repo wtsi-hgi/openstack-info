@@ -1,6 +1,24 @@
-from typing import Dict
+from enum import Enum, unique
 
+from typing import Dict, Type
+
+from openstackinfo.indexers import InformationIndexer, InformationIndexerByType, InformationIndexerById
 from openstackinfo.models import RunConfiguration
+
+
+@unique
+class IndexBy(Enum):
+    """
+    Property by which information can be indexed.
+    """
+    TYPE = "type"
+    ID = "id"
+
+
+INDEXER_MAP: Dict[str, Type[InformationIndexer]] = {
+    IndexBy.TYPE: InformationIndexerByType,
+    IndexBy.ID: InformationIndexerById
+}
 
 
 def get_information(configuration: RunConfiguration) -> Dict:

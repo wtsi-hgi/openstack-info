@@ -4,7 +4,8 @@ import os
 
 from openstackinfo.entrypoint import USERNAME_ENVIRONMENT_VARIABLE, PASSWORD_ENVIRONMENT_VARIABLE, \
     AUTH_URL_ENVIRONMENT_VARIABLE, TENANT_ENVIRONMENT_VARIABLE, get_credentials_from_environment, parse_arguments, \
-    LONG_INDEX_CLI_PARAMETER, INDEX_BY_ID
+    LONG_INDEX_CLI_PARAMETER
+from openstackinfo.helpers import IndexBy
 from openstackinfo.indexers import InformationIndexerById
 from openstackinfo.tests._common import TEST_USERNAME, TEST_PASSWORD, TEST_AUTH_URL, TEST_TENANT_NAME
 
@@ -33,7 +34,7 @@ class TestParseArguments(unittest.TestCase):
     Tests for `parse_arguments`.
     """
     def test_when_valid_arguments(self):
-        configuration = parse_arguments([LONG_INDEX_CLI_PARAMETER, INDEX_BY_ID])
+        configuration = parse_arguments([LONG_INDEX_CLI_PARAMETER, IndexBy.ID.value])
         self.assertEqual(configuration.indexer, InformationIndexerById)
 
 

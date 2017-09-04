@@ -3,10 +3,10 @@ import os
 import sys
 from argparse import ArgumentParser
 
-from typing import List, Dict, NamedTuple, Type
+from typing import List, NamedTuple, Type
 
-from openstackinfo.helpers import get_information
-from openstackinfo.indexers import InformationIndexerByType, InformationIndexerById, InformationIndexer
+from openstackinfo.helpers import get_information, INDEXER_MAP, IndexBy
+from openstackinfo.indexers import InformationIndexer
 from openstackinfo.models import Credentials, RunConfiguration
 from openstackinfo.retrievers import ShadeInformationRetriever
 
@@ -17,13 +17,6 @@ TENANT_ENVIRONMENT_VARIABLE = "OS_TENANT_NAME"
 
 SHORT_INDEX_CLI_PARAMETER = "-i"
 LONG_INDEX_CLI_PARAMETER = "--index"
-
-INDEX_BY_TYPE = "type"
-INDEX_BY_ID = "id"
-INDEXER_MAP: Dict[str, Type[InformationIndexer]] = {
-    INDEX_BY_TYPE: InformationIndexerByType,
-    INDEX_BY_ID: InformationIndexerById
-}
 
 
 class CliConfiguration(NamedTuple):
@@ -53,10 +46,12 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
     :return: CLI arguments
     """
     parser = ArgumentParser(description="Openstack tenant information retriever")
-    parser.add_argument(SHORT_INDEX_CLI_PARAMETER, LONG_INDEX_CLI_PARAMETER, default=INDEX_BY_TYPE,
-                        choices=list(INDEXER_MAP.keys()), help="What the OpenStack information should be index by")
+    parser.add_argument(
+        SHORT_INDEX_CLI_PARAMETER, LONG_INDEX_CLI_PARAMETER, default=IndexBy.TYPE.value,
+        choices=[item.value for item in IndexBy], help="What the OpenStack information should be index by")
     arguments = parser.parse_args(argument_list)
-    return CliConfiguration(indexer=INDEXER_MAP[arguments.index])
+    index_by = IndexBy(arguments.index)
+    return CliConfiguration(indexer=INDEXER_MAP[index_by])
 
 
 def main():
