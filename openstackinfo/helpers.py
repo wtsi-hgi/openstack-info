@@ -28,6 +28,6 @@ def get_information(configuration: RunConfiguration) -> Dict:
     :return: information about OpenStack tenant
     """
     openstack_info = configuration.retriever.get_openstack_info()
-    indexed_openstack_info = configuration.indexer().index(openstack_info)
+    indexed_openstack_info = configuration.indexer.index(openstack_info)
     return indexed_openstack_info
 

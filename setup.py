@@ -10,7 +10,7 @@ except ImportError:
 
 setup(
     name="openstackinfo",
-    version="5.0.0",
+    version="5.0.1",
     packages=find_packages(exclude=["tests"]),
     install_requires=open("requirements.txt", "r").readlines(),
     url="https://github.com/wtsi-hgi/openstack-info",

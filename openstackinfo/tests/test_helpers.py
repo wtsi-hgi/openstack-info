@@ -13,7 +13,7 @@ class TestGetInformation(unittest.TestCase):
     """
     def test_get_information(self):
         configuration = RunConfiguration(
-            retriever=DummyInformationRetriever(INFORMATION_INDEXED_BY_TYPE), indexer=InformationIndexerById)
+            retriever=DummyInformationRetriever(INFORMATION_INDEXED_BY_TYPE), indexer=InformationIndexerById())
         information = get_information(configuration)
         self.assertEqual(information, INFORMATION_INDEXED_BY_ID)
 
