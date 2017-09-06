@@ -99,7 +99,7 @@ class ShadeInformationRetriever(InformationRetriever):
         Gets information about image on OpenStack.
         :return: information about image
         """
-        return self._connection.list_servers(detailed=True)
+        return self._connection.list_images()
 
     def get_server_info(self) -> List[Dict]:
         """
