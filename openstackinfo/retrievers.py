@@ -1,16 +1,20 @@
+import logging
 from abc import ABCMeta, abstractmethod
 
 import os
+from concurrent.futures import ThreadPoolExecutor, FIRST_EXCEPTION, wait
 from enum import Enum, unique
 
 import shade
 from shade import OpenStackCloud
-from typing import List, Dict
+from typing import List, Dict, Callable
 
 from openstackinfo.models import Credentials
 from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, \
     OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator, OPENSTACK_IMAGES_JSON_KEY, \
     OPENSTACK_KEYPAIRS_JSON_KEY
+
+_logger = logging.getLogger(__name__)
 
 
 @unique
@@ -49,6 +53,8 @@ class ShadeInformationRetriever(InformationRetriever):
     """
     Gets information about OpenStack tenant using the `shade` library.
     """
+    MAX_SIMULTANEOUS_CONNECTIONS = 6
+
     @property
     def _connection(self) -> OpenStackCloud:
         """
@@ -64,12 +70,15 @@ class ShadeInformationRetriever(InformationRetriever):
             )
         return self._connection_cache
 
-    def __init__(self, credentials: Credentials):
+    def __init__(self, credentials: Credentials, max_simultaneous_connections=MAX_SIMULTANEOUS_CONNECTIONS):
         """
         Constructor.
         :param credentials: credentials used to access OpenStack API
+        :param max_simultaneous_connections: the maximum number of simultaneous connections that should be sent to
+        OpenStack at a time (best try, not guaranteed)
         """
         self.credentials = credentials
+        self.max_simultaneous_connections = max_simultaneous_connections
         self._connection_cache = None
 
     def _get_openstack_info(self) -> Dict:
@@ -80,14 +89,30 @@ class ShadeInformationRetriever(InformationRetriever):
             if key.startswith("OS_") and key not in EnvironmentVariable.__members__:
                 saved_env[key] = os.environ.pop(key)
 
-        information = {
-            OPENSTACK_IMAGES_JSON_KEY: self.get_image_info(),
-            OPENSTACK_INSTANCES_JSON_KEY: self.get_server_info(),
-            OPENSTACK_KEYPAIRS_JSON_KEY: self.get_keypair_info(),
-            OPENSTACK_NETWORKS_JSON_KEY: self.get_security_group_info(),
-            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_network_info(),
-            OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info()
+        information_requests = {
+            OPENSTACK_IMAGES_JSON_KEY: self.get_image_info,
+            OPENSTACK_INSTANCES_JSON_KEY: self.get_server_info,
+            OPENSTACK_KEYPAIRS_JSON_KEY: self.get_keypair_info,
+            OPENSTACK_NETWORKS_JSON_KEY: self.get_security_group_info,
+            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_network_info,
+            OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info
         }
+
+        information: Dict[str, Dict] = {}
+
+        def handle_request(name: str, requestor: Callable[[], Dict]):
+            information[name] = requestor()
+            _logger.info(f"Loaded data for {name}")
+
+        # XXX: Use of `self.max_simultaneous_connections` does not consider parallel use of this method
+        executor = ThreadPoolExecutor(max_workers=self.max_simultaneous_connections)
+        futures = [executor.submit(handle_request, name, requestor) for name, requestor in information_requests.items()]
+        wait(futures, return_when=FIRST_EXCEPTION)
+        executor.shutdown()
+
+        for future in futures:
+            future.result()
+        assert len(information) == len(information_requests)
 
         for key, value in saved_env.items():
             os.environ[key] = value
