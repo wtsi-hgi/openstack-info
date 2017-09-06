@@ -6,7 +6,8 @@ from typing import List, Dict
 
 from openstackinfo.models import Credentials
 from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, \
-    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator
+    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator, OPENSTACK_IMAGES_JSON_KEY, \
+    OPENSTACK_KEYPAIRS_JSON_KEY
 
 
 class InformationRetriever(metaclass=ABCMeta):
@@ -59,11 +60,34 @@ class ShadeInformationRetriever(InformationRetriever):
 
     def _get_openstack_info(self) -> Dict:
         return {
+            OPENSTACK_IMAGES_JSON_KEY: self.get_image_info(),
             OPENSTACK_INSTANCES_JSON_KEY: self.get_server_info(),
-            OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info(),
+            OPENSTACK_KEYPAIRS_JSON_KEY: self.get_keypair_info(),
             OPENSTACK_NETWORKS_JSON_KEY: self.get_security_group_info(),
-            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_network_info()
+            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_network_info(),
+            OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info()
         }
+
+    def get_image_info(self) -> List[Dict]:
+        """
+        Gets information about image on OpenStack.
+        :return: information about image
+        """
+        return self._connection.list_servers(detailed=True)
+
+    def get_server_info(self) -> List[Dict]:
+        """
+        Gets information about servers on OpenStack.
+        :return: information about servers
+        """
+        return self._connection.list_servers(detailed=True)
+
+    def get_keypair_info(self) -> List[Dict]:
+        """
+        Gets information about keypairs on OpenStack.
+        :return: information about image
+        """
+        return self._connection.list_keypairs()
 
     def get_network_info(self) -> List[Dict]:
         """
@@ -85,13 +109,6 @@ class ShadeInformationRetriever(InformationRetriever):
         :return: information about volumes
         """
         return self._connection.list_volumes()
-
-    def get_server_info(self) -> List[Dict]:
-        """
-        Gets information about servers on OpenStack.
-        :return: information about servers
-        """
-        return self._connection.list_servers(detailed=True)
 
 
 class DummyInformationRetriever(InformationRetriever):

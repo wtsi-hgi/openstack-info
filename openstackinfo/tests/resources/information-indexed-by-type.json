@@ -1,10 +1,12 @@
 {
     "instances": [{
+        "id": "id_0",
         "name": "example",
-        "id": "some-id",
         "type": "instance"
     }],
-    "volumes": [],
-    "networks": [],
-    "security_groups": []
+    "keypairs": [{
+        "id": "id_1",
+        "name": "example-2",
+        "type": "keypair"
+    }]
 }

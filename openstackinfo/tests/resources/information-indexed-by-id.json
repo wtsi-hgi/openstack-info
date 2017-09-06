@@ -1,7 +1,12 @@
 {
-    "some-id": {
+    "id_0": {
+        "id": "id_0",
         "name": "example",
-        "id": "some-id",
         "type": "instance"
+    },
+    "id_1": {
+        "id": "id_1",
+        "name": "example-2",
+        "type": "keypair"
     }
 }

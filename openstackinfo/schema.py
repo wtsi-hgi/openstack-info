@@ -5,15 +5,19 @@ from typing import Dict, Tuple
 ID_JSON_KEY = "id"
 TYPE_JSON_KEY = "type"
 
+OPENSTACK_IMAGES_JSON_KEY = "images"
 OPENSTACK_INSTANCES_JSON_KEY = "instances"
-OPENSTACK_VOLUMES_JSON_KEY = "volumes"
+OPENSTACK_KEYPAIRS_JSON_KEY = "keypairs"
 OPENSTACK_NETWORKS_JSON_KEY = "networks"
 OPENSTACK_SECURITY_GROUPS_JSON_KEY = "security_groups"
+OPENSTACK_VOLUMES_JSON_KEY = "volumes"
 
 RESOURCE_TYPE_MAPPINGS = {
-    OPENSTACK_SECURITY_GROUPS_JSON_KEY: "security_group",
+    OPENSTACK_IMAGES_JSON_KEY: "image",
     OPENSTACK_INSTANCES_JSON_KEY: "instance",
+    OPENSTACK_KEYPAIRS_JSON_KEY: "keypair",
     OPENSTACK_NETWORKS_JSON_KEY: "network",
+    OPENSTACK_SECURITY_GROUPS_JSON_KEY: "security_group",
     OPENSTACK_VOLUMES_JSON_KEY: "volume"
 }
 
@@ -61,9 +65,12 @@ class IndexedByTypeValidator(Validator):
     Validates whether information is indexed by type.
     """
     def get_validity(self, information: Dict):
-        for key in RESOURCE_TYPE_MAPPINGS.keys():
-            if key not in information:
-                return False, f"Required key \"{key}\" missing: {information}"
+        for key, value in information.items():
+            if key not in RESOURCE_TYPE_MAPPINGS:
+                return False, f"Unexpected key \"{key}\": {information}"
+            elif not isinstance(value, list):
+                return False, f"Unexpected value type associated to key - expected `list`, found `{type(value)}`: " \
+                              f"{information}"
         return True, None
 
 
