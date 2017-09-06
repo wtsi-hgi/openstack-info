@@ -1,5 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
+import os
+from enum import Enum, unique
+
 import shade
 from shade import OpenStackCloud
 from typing import List, Dict
@@ -8,6 +11,17 @@ from openstackinfo.models import Credentials
 from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, \
     OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator, OPENSTACK_IMAGES_JSON_KEY, \
     OPENSTACK_KEYPAIRS_JSON_KEY
+
+
+@unique
+class EnvironmentVariable(Enum):
+    """
+    Environment variables that may be used by information retrievers to get settings.
+    """
+    OS_PASSWORD = "OS_PASSWORD"
+    OS_USERNAME = "OS_USERNAME"
+    OS_AUTH_URL = "OS_AUTH_URL"
+    OS_TENANT_NAME = "OS_TENANT_NAME"
 
 
 class InformationRetriever(metaclass=ABCMeta):
@@ -59,7 +73,14 @@ class ShadeInformationRetriever(InformationRetriever):
         self._connection_cache = None
 
     def _get_openstack_info(self) -> Dict:
-        return {
+        # Note: `os_client_config` parse all `OS_` variables... which would be fine if its parser didn't break when it
+        # encounters certain values, e.g. https://bugs.launchpad.net/os-client-config/+bug/1635696. Hiding ext
+        saved_env = {}
+        for key in list(os.environ.keys()):
+            if key.startswith("OS_") and key not in EnvironmentVariable.__members__:
+                saved_env[key] = os.environ.pop(key)
+
+        information = {
             OPENSTACK_IMAGES_JSON_KEY: self.get_image_info(),
             OPENSTACK_INSTANCES_JSON_KEY: self.get_server_info(),
             OPENSTACK_KEYPAIRS_JSON_KEY: self.get_keypair_info(),
@@ -67,6 +88,11 @@ class ShadeInformationRetriever(InformationRetriever):
             OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_network_info(),
             OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info()
         }
+
+        for key, value in saved_env.items():
+            os.environ[key] = value
+
+        return information
 
     def get_image_info(self) -> List[Dict]:
         """
