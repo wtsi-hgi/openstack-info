@@ -2,8 +2,9 @@ import logging
 from abc import ABCMeta, abstractmethod
 
 import os
-from concurrent.futures import ThreadPoolExecutor, FIRST_EXCEPTION, wait
+from concurrent.futures import ThreadPoolExecutor, FIRST_EXCEPTION, wait, Future
 from enum import Enum, unique
+from threading import Lock
 
 import shade
 from shade import OpenStackCloud
@@ -11,8 +12,8 @@ from typing import List, Dict, Callable
 
 from openstackinfo.models import Credentials
 from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, \
-    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator, OPENSTACK_IMAGES_JSON_KEY, \
-    OPENSTACK_KEYPAIRS_JSON_KEY
+    OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator, \
+    OPENSTACK_IMAGES_JSON_KEY, OPENSTACK_KEYPAIRS_JSON_KEY
 
 _logger = logging.getLogger(__name__)
 
@@ -56,18 +57,29 @@ class ShadeInformationRetriever(InformationRetriever):
     MAX_SIMULTANEOUS_CONNECTIONS = 6
 
     @property
+    def credentials(self):
+        return self._credentials
+
+    @credentials.setter
+    def credentials(self, credentials: Credentials):
+        with self._connection_change_lock:
+            self._credentials = credentials
+            self._connection_cache = None
+
+    @property
+    def max_simultaneous_connections(self) -> int:
+        return self._max_simultaneous_connections
+
+    @property
     def _connection(self) -> OpenStackCloud:
-        """
-        Gets `shade` connection to OpenStack using the given credentials.
-        :return: `shade` connection
-        """
-        if self._connection_cache is None:
-            self._connection_cache = shade.openstack_cloud(
-                auth_url=self.credentials.auth_url,
-                project_name=self.credentials.tenant,
-                username=self.credentials.username,
-                password=self.credentials.password
-            )
+        with self._connection_change_lock:
+            if self._connection_cache is None:
+                self._connection_cache = shade.openstack_cloud(
+                    auth_url=self.credentials.auth_url,
+                    project_name=self.credentials.tenant,
+                    username=self.credentials.username,
+                    password=self.credentials.password
+                )
         return self._connection_cache
 
     def __init__(self, credentials: Credentials, max_simultaneous_connections=MAX_SIMULTANEOUS_CONNECTIONS):
@@ -75,11 +87,15 @@ class ShadeInformationRetriever(InformationRetriever):
         Constructor.
         :param credentials: credentials used to access OpenStack API
         :param max_simultaneous_connections: the maximum number of simultaneous connections that should be sent to
-        OpenStack at a time (best try, not guaranteed)
+        OpenStack at a time
         """
-        self.credentials = credentials
-        self.max_simultaneous_connections = max_simultaneous_connections
+        self._connection_change_lock = Lock()
+        self._credentials = None
         self._connection_cache = None
+        self._max_simultaneous_connections = None
+        self._max_simultaneous_connections = max_simultaneous_connections
+        self._executor = ThreadPoolExecutor(max_workers=self.max_simultaneous_connections)
+        self.credentials = credentials
 
     def _get_openstack_info(self) -> Dict:
         # Note: `os_client_config` parse all `OS_` variables... which would be fine if its parser didn't break when it
@@ -97,18 +113,17 @@ class ShadeInformationRetriever(InformationRetriever):
             OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_network_info,
             OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info
         }
-
         information: Dict[str, Dict] = {}
 
         def handle_request(name: str, requestor: Callable[[], Dict]):
             information[name] = requestor()
             _logger.info(f"Loaded data for {name}")
 
-        # XXX: Use of `self.max_simultaneous_connections` does not consider parallel use of this method
-        executor = ThreadPoolExecutor(max_workers=self.max_simultaneous_connections)
-        futures = [executor.submit(handle_request, name, requestor) for name, requestor in information_requests.items()]
+        futures: List[Future] = []
+        for name, requestor in information_requests.items():
+            self._executor.submit(handle_request, name, requestor)
         wait(futures, return_when=FIRST_EXCEPTION)
-        executor.shutdown()
+        self._executor.shutdown()
 
         for future in futures:
             future.result()
