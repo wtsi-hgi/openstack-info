@@ -109,8 +109,8 @@ class ShadeInformationRetriever(InformationRetriever):
             OPENSTACK_IMAGES_JSON_KEY: self.get_image_info,
             OPENSTACK_INSTANCES_JSON_KEY: self.get_server_info,
             OPENSTACK_KEYPAIRS_JSON_KEY: self.get_keypair_info,
-            OPENSTACK_NETWORKS_JSON_KEY: self.get_security_group_info,
-            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_network_info,
+            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_security_group_info,
+            OPENSTACK_NETWORKS_JSON_KEY: self.get_network_info,
             OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info
         }
         information: Dict[str, Dict] = {}
