@@ -13,7 +13,8 @@ from typing import List, Dict, Callable
 from openstackinfo.models import Credentials
 from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, \
     OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator, \
-    OPENSTACK_IMAGES_JSON_KEY, OPENSTACK_KEYPAIRS_JSON_KEY
+    OPENSTACK_IMAGES_JSON_KEY, OPENSTACK_KEYPAIRS_JSON_KEY, OPENSTACK_SUBNETS_JSON_KEY, OPENSTACK_ROUTERS_JSON_KEY, \
+    RESOURCE_TYPE_MAPPINGS
 
 _logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ class ShadeInformationRetriever(InformationRetriever):
     """
     Gets information about OpenStack tenant using the `shade` library.
     """
-    MAX_SIMULTANEOUS_CONNECTIONS = 6
+    MAX_SIMULTANEOUS_CONNECTIONS = len(RESOURCE_TYPE_MAPPINGS)
 
     @property
     def credentials(self):
@@ -109,8 +110,10 @@ class ShadeInformationRetriever(InformationRetriever):
             OPENSTACK_IMAGES_JSON_KEY: self.get_image_info,
             OPENSTACK_INSTANCES_JSON_KEY: self.get_server_info,
             OPENSTACK_KEYPAIRS_JSON_KEY: self.get_keypair_info,
-            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_security_group_info,
             OPENSTACK_NETWORKS_JSON_KEY: self.get_network_info,
+            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_security_group_info,
+            OPENSTACK_SUBNETS_JSON_KEY: self.get_subnet_info,
+            OPENSTACK_ROUTERS_JSON_KEY: self.get_router_info,
             OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info
         }
         information: Dict[str, Dict] = {}
@@ -168,6 +171,20 @@ class ShadeInformationRetriever(InformationRetriever):
         :return: information about security groups
         """
         return self._connection.list_security_groups()
+
+    def get_subnet_info(self) -> List[Dict]:
+        """
+        Gets information about subnets on OpenStack.
+        :return: information about volumes
+        """
+        return self._connection.list_subnets()
+
+    def get_router_info(self) -> List[Dict]:
+        """
+        Gets information about routers on OpenStack.
+        :return: information about volumes
+        """
+        return self._connection.list_routers()
 
     def get_volume_info(self) -> List[Dict]:
         """
