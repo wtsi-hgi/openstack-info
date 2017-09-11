@@ -56,6 +56,16 @@ class ShadeInformationRetriever(InformationRetriever):
     Gets information about OpenStack tenant using the `shade` library.
     """
     MAX_SIMULTANEOUS_CONNECTIONS = len(RESOURCE_TYPE_MAPPINGS)
+    _INFORMATION_REQUESTORS = {
+        OPENSTACK_IMAGES_JSON_KEY: lambda retriever: retriever._connection.list_images(),
+        OPENSTACK_INSTANCES_JSON_KEY: lambda retriever: retriever._connection.list_servers(detailed=True),
+        OPENSTACK_KEYPAIRS_JSON_KEY: lambda retriever: retriever._connection.list_keypairs(),
+        OPENSTACK_NETWORKS_JSON_KEY: lambda retriever: retriever._connection.list_networks(),
+        OPENSTACK_SECURITY_GROUPS_JSON_KEY: lambda retriever: retriever._connection.list_security_groups(),
+        OPENSTACK_SUBNETS_JSON_KEY: lambda retriever: retriever._connection.list_subnets(),
+        OPENSTACK_ROUTERS_JSON_KEY: lambda retriever: retriever._connection.list_routers(),
+        OPENSTACK_VOLUMES_JSON_KEY: lambda retriever: retriever._connection.list_volumes()
+    }
 
     @property
     def credentials(self):
@@ -106,92 +116,26 @@ class ShadeInformationRetriever(InformationRetriever):
             if key.startswith("OS_") and key not in EnvironmentVariable.__members__:
                 saved_env[key] = os.environ.pop(key)
 
-        information_requests = {
-            OPENSTACK_IMAGES_JSON_KEY: self.get_image_info,
-            OPENSTACK_INSTANCES_JSON_KEY: self.get_server_info,
-            OPENSTACK_KEYPAIRS_JSON_KEY: self.get_keypair_info,
-            OPENSTACK_NETWORKS_JSON_KEY: self.get_network_info,
-            OPENSTACK_SECURITY_GROUPS_JSON_KEY: self.get_security_group_info,
-            OPENSTACK_SUBNETS_JSON_KEY: self.get_subnet_info,
-            OPENSTACK_ROUTERS_JSON_KEY: self.get_router_info,
-            OPENSTACK_VOLUMES_JSON_KEY: self.get_volume_info
-        }
         information: Dict[str, Dict] = {}
 
-        def handle_request(name: str, requestor: Callable[[], Dict]):
-            information[name] = requestor()
+        def handle_request(name: str, requestor: Callable[[ShadeInformationRetriever], Dict]):
+            information[name] = requestor(self)
             _logger.info(f"Loaded data for {name}")
 
         futures: List[Future] = []
-        for name, requestor in information_requests.items():
+        for name, requestor in ShadeInformationRetriever._INFORMATION_REQUESTORS.items():
             self._executor.submit(handle_request, name, requestor)
         wait(futures, return_when=FIRST_EXCEPTION)
         self._executor.shutdown()
 
         for future in futures:
             future.result()
-        assert len(information) == len(information_requests)
+        assert len(information) == len(ShadeInformationRetriever._INFORMATION_REQUESTORS)
 
         for key, value in saved_env.items():
             os.environ[key] = value
 
         return information
-
-    def get_image_info(self) -> List[Dict]:
-        """
-        Gets information about image on OpenStack.
-        :return: information about image
-        """
-        return self._connection.list_images()
-
-    def get_server_info(self) -> List[Dict]:
-        """
-        Gets information about servers on OpenStack.
-        :return: information about servers
-        """
-        return self._connection.list_servers(detailed=True)
-
-    def get_keypair_info(self) -> List[Dict]:
-        """
-        Gets information about keypairs on OpenStack.
-        :return: information about image
-        """
-        return self._connection.list_keypairs()
-
-    def get_network_info(self) -> List[Dict]:
-        """
-        Gets information about networks on OpenStack.
-        :return: information about networks
-        """
-        return self._connection.list_networks()
-
-    def get_security_group_info(self) -> List[Dict]:
-        """
-        Gets information about security groups on OpenStack.
-        :return: information about security groups
-        """
-        return self._connection.list_security_groups()
-
-    def get_subnet_info(self) -> List[Dict]:
-        """
-        Gets information about subnets on OpenStack.
-        :return: information about volumes
-        """
-        return self._connection.list_subnets()
-
-    def get_router_info(self) -> List[Dict]:
-        """
-        Gets information about routers on OpenStack.
-        :return: information about volumes
-        """
-        return self._connection.list_routers()
-
-    def get_volume_info(self) -> List[Dict]:
-        """
-        Gets information about volumes (attached and unattached) on OpenStack.
-        :return: information about volumes
-        """
-        return self._connection.list_volumes()
 
 
 class DummyInformationRetriever(InformationRetriever):
