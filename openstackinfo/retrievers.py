@@ -124,7 +124,8 @@ class ShadeInformationRetriever(InformationRetriever):
 
         futures: List[Future] = []
         for name, requestor in ShadeInformationRetriever._INFORMATION_REQUESTORS.items():
-            self._executor.submit(handle_request, name, requestor)
+            future = self._executor.submit(handle_request, name, requestor)
+            futures.append(future)
         wait(futures, return_when=FIRST_EXCEPTION)
         self._executor.shutdown()
 
