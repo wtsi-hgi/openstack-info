@@ -45,7 +45,6 @@ def create_retry_decorator(connection_configuration: ConnectionConfiguration, wa
                     logger.error(e)
 
                     if retries != connection_configuration.max_retries:
-                        print(retry_wait)
                         wait_method(retry_wait)
                         retry_wait *= connection_configuration.retry_wait_multiplier
                         retries += 1
