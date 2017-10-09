@@ -1,24 +1,27 @@
 import json
 import os
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
-from openstackinfo.models import RunConfiguration
-from typing import List, NamedTuple, Type
+from typing import List, NamedTuple, Type, Any
 
-from openstackinfo.helpers import get_information, INDEXER_MAP, IndexBy
+from openstackinfo.helpers import get_information, INDEXER_MAP, IndexBy, RunConfiguration
 from openstackinfo.indexers import InformationIndexer
-from openstackinfo.retriever.retrievers import ShadeInformationRetriever
-
 from openstackinfo.retriever.models import ConnectionConfiguration, Credentials
+from openstackinfo.retriever.retrievers import ShadeInformationRetriever
 
 USERNAME_ENVIRONMENT_VARIABLE = "OS_USERNAME"
 PASSWORD_ENVIRONMENT_VARIABLE = "OS_PASSWORD"
 AUTH_URL_ENVIRONMENT_VARIABLE = "OS_AUTH_URL"
 TENANT_ENVIRONMENT_VARIABLE = "OS_TENANT_NAME"
 
-SHORT_INDEX_CLI_PARAMETER = "-i"
-LONG_INDEX_CLI_PARAMETER = "--index"
+SHORT_INDEX_CLI_PARAMETER = "i"
+LONG_INDEX_CLI_PARAMETER = "index"
+
+LONG_MAX_CONNECTIONS_CLI_PARAMETER = "max-connections"
+LONG_NUMBER_OF_RETRIES_CLI_PARAMETER = "retries"
+LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER = "retry-wait"
+LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER = "retry-wait-multiplier"
 
 
 class CliConfiguration(NamedTuple):
@@ -46,16 +49,46 @@ def get_credentials_from_environment() -> Credentials:
 def parse_arguments(argument_list: List[str]) -> CliConfiguration:
     """
     Parse the given CLI arguments.
-    :return: CLI arguments
+    :return: CLI configuration
     """
     parser = ArgumentParser(description="Openstack tenant information retriever")
-    parser.add_argument(
-        SHORT_INDEX_CLI_PARAMETER, LONG_INDEX_CLI_PARAMETER, default=IndexBy.TYPE.value,
-        choices=[item.value for item in IndexBy], help="What the OpenStack information should be index by")
-    arguments = parser.parse_args(argument_list)
-    index_by = IndexBy(arguments.index)
-    # TODO: connection_configuration
-    return CliConfiguration(indexer=INDEXER_MAP[index_by](), connection_configuration=ConnectionConfiguration())
+    parser.add_argument(f"-{SHORT_INDEX_CLI_PARAMETER}", f"--{LONG_INDEX_CLI_PARAMETER}", default=IndexBy.TYPE.value,
+                        choices=[item.value for item in IndexBy],
+                        help="What the OpenStack information should be index by")
+    parser.add_argument(f"--{LONG_MAX_CONNECTIONS_CLI_PARAMETER}",
+                        default=ConnectionConfiguration().max_connections, type=int,
+                        help="Maximum number of simultaneous connections to make to OpenStack")
+    parser.add_argument(f"--{LONG_NUMBER_OF_RETRIES_CLI_PARAMETER}",
+                        default=ConnectionConfiguration().number_of_retries, type=float,
+                        help="Number of times to retry getting information about a particular tpye of OpenStack "
+                             "resource")
+    parser.add_argument(f"--{LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER}",
+                        default=ConnectionConfiguration().retry_wait_in_seconds, type=float,
+                        help="Initial amount of time (in seconds) to wait after a failure before a retry")
+    parser.add_argument(f"--{LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER}",
+                        default=ConnectionConfiguration().retry_wait_multiplier, type=float,
+                        help="Multiplier that is applied to the wait time after each failure")
+
+    cli_input = parser.parse_args(argument_list)
+    index_by = IndexBy(_get_parameter_argument(LONG_INDEX_CLI_PARAMETER, cli_input))
+    indexer = INDEXER_MAP[index_by]()
+    connection_configuration = ConnectionConfiguration(
+        max_connections=_get_parameter_argument(LONG_MAX_CONNECTIONS_CLI_PARAMETER, cli_input),
+        number_of_retries=_get_parameter_argument(LONG_NUMBER_OF_RETRIES_CLI_PARAMETER, cli_input),
+        retry_wait_in_seconds=_get_parameter_argument(LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER, cli_input),
+        retry_wait_multiplier=_get_parameter_argument(LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER, cli_input)
+    )
+    return CliConfiguration(indexer=indexer, connection_configuration=connection_configuration)
+
+
+def _get_parameter_argument(parameter: str, cli_input: Namespace) -> Any:
+    """
+    Gets the argument associated to the given parameter in the given parsed CLI input.
+    :param parameter: the parameter of interest
+    :param cli_input: the namespace resulting in the parsing of the CLI input
+    :return: the associated argument
+    """
+    return vars(cli_input)[parameter.replace("-", "_")]
 
 
 def main():
@@ -64,7 +97,8 @@ def main():
     """
     cli_configuration = parse_arguments(sys.argv[1:])
     credentials = get_credentials_from_environment()
-    retriever = ShadeInformationRetriever(credentials)
+    retriever = ShadeInformationRetriever(
+        credentials, connection_configuration=cli_configuration.connection_configuration)
     information = get_information(RunConfiguration(retriever=retriever, indexer=cli_configuration.indexer))
     print(json.dumps(information, sort_keys=True, indent=4))
 

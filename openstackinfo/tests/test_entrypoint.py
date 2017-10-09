@@ -34,7 +34,7 @@ class TestParseArguments(unittest.TestCase):
     Tests for `parse_arguments`.
     """
     def test_when_valid_arguments(self):
-        configuration = parse_arguments([LONG_INDEX_CLI_PARAMETER, IndexBy.ID.value])
+        configuration = parse_arguments([f"--{LONG_INDEX_CLI_PARAMETER}", IndexBy.ID.value])
         self.assertIsInstance(configuration.indexer, InformationIndexerById)
 
 

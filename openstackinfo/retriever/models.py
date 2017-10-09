@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 class Credentials(NamedTuple):
@@ -13,9 +13,9 @@ class Credentials(NamedTuple):
 
 class ConnectionConfiguration(NamedTuple):
     """
-    TODO
+    Configuration for how to manage connection to OpenStack.
     """
-    max_simultaneous_connections: int = 1
+    max_connections: Optional[int] = None
     number_of_retries: int = 0
-    retry_period_in_seconds: float = 1.0
-    retry_period_multiplier: float = 2.0
+    retry_wait_in_seconds: float = 1.0
+    retry_wait_multiplier: float = 2.0

@@ -1,7 +1,6 @@
 import unittest
 
-from openstackinfo.helpers import get_information
-from openstackinfo.models import RunConfiguration
+from openstackinfo.helpers import get_information, RunConfiguration
 from openstackinfo.indexers import InformationIndexerById
 from openstackinfo.retriever.retrievers import DummyInformationRetriever
 from openstackinfo.tests._common import INFORMATION_INDEXED_BY_TYPE, INFORMATION_INDEXED_BY_ID

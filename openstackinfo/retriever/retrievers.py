@@ -9,7 +9,7 @@ import shade
 from shade import OpenStackCloud
 from typing import List, Dict, Callable
 
-from openstackinfo.retriever.helpers import retry_wrapper
+from openstackinfo.retriever.helpers import create_retry_decorator
 from openstackinfo.retriever.models import Credentials, ConnectionConfiguration
 from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, \
     OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator, \
@@ -55,7 +55,7 @@ class ShadeInformationRetriever(InformationRetriever):
     """
     Gets information about OpenStack tenant using the `shade` library.
     """
-    MAX_SIMULTANEOUS_CONNECTIONS = len(RESOURCE_TYPE_MAPPINGS)
+    DEFAULT_MAX_CONNECTIONS = len(RESOURCE_TYPE_MAPPINGS)
     _INFORMATION_REQUESTORS = {
         OPENSTACK_IMAGES_JSON_KEY: lambda retriever: retriever._connection.list_images(),
         OPENSTACK_INSTANCES_JSON_KEY: lambda retriever: retriever._connection.list_servers(detailed=True),
@@ -100,12 +100,15 @@ class ShadeInformationRetriever(InformationRetriever):
         self._connection_change_lock = Lock()
         self._credentials = None
         self._connection_cache = None
-        self._executor = ThreadPoolExecutor(max_workers=self.connection_configuration.max_simultaneous_connections)
+        self._executor = ThreadPoolExecutor(
+            max_workers=self.connection_configuration.max_connections
+            if self.connection_configuration.max_connections is not None
+            else ShadeInformationRetriever.DEFAULT_MAX_CONNECTIONS)
         self.credentials = credentials
 
     def _get_openstack_info(self) -> Dict:
         # Note: `os_client_config` parse all `OS_` variables... which would be fine if its parser didn't break when it
-        # encounters certain values, e.g. https://bugs.launchpad.net/os-client-config/+bug/1635696. Hiding ext
+        # encounters certain values, e.g. https://bugs.launchpad.net/os-client-config/+bug/1635696. Hiding extra.
         saved_env = {}
         for key in list(os.environ.keys()):
             if key.startswith("OS_") and key not in EnvironmentVariable.__members__:
@@ -113,7 +116,7 @@ class ShadeInformationRetriever(InformationRetriever):
 
         information: Dict[str, Dict] = {}
 
-        @retry_wrapper(self.connection_configuration)
+        @create_retry_decorator(self.connection_configuration)
         def handle_request(name: str, requestor: Callable[[ShadeInformationRetriever], Dict]):
             information[name] = requestor(self)
             _logger.info(f"Loaded data for {name}")
@@ -137,7 +140,7 @@ class ShadeInformationRetriever(InformationRetriever):
 
 class DummyInformationRetriever(InformationRetriever):
     """
-    Dummy implementation.
+    Dummy implementation of a retriever.
     """
     def __init__(self, information: Dict=None):
         self.information = information if information is not None else None
