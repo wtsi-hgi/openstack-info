@@ -129,6 +129,7 @@ class ShadeInformationRetriever(InformationRetriever):
         self._executor.shutdown()
 
         for future in futures:
+            # TODO: Could aggregate all exceptions, opposed to raising the first encountered
             future.result()
         assert len(information) == len(ShadeInformationRetriever._INFORMATION_REQUESTORS)
 
