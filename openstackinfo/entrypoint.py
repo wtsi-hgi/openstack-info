@@ -19,7 +19,7 @@ SHORT_INDEX_CLI_PARAMETER = "i"
 LONG_INDEX_CLI_PARAMETER = "index"
 
 LONG_MAX_CONNECTIONS_CLI_PARAMETER = "max-connections"
-LONG_NUMBER_OF_RETRIES_CLI_PARAMETER = "retries"
+LONG_MAX_RETRIES_CLI_PARAMETER = "retries"
 LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER = "retry-wait"
 LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER = "retry-wait-multiplier"
 
@@ -58,8 +58,8 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
     parser.add_argument(f"--{LONG_MAX_CONNECTIONS_CLI_PARAMETER}",
                         default=ConnectionConfiguration().max_connections, type=int,
                         help="Maximum number of simultaneous connections to make to OpenStack")
-    parser.add_argument(f"--{LONG_NUMBER_OF_RETRIES_CLI_PARAMETER}",
-                        default=ConnectionConfiguration().number_of_retries, type=float,
+    parser.add_argument(f"--{LONG_MAX_RETRIES_CLI_PARAMETER}",
+                        default=ConnectionConfiguration().max_retries, type=float,
                         help="Number of times to retry getting information about a particular tpye of OpenStack "
                              "resource")
     parser.add_argument(f"--{LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER}",
@@ -74,7 +74,7 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
     indexer = INDEXER_MAP[index_by]()
     connection_configuration = ConnectionConfiguration(
         max_connections=_get_parameter_argument(LONG_MAX_CONNECTIONS_CLI_PARAMETER, cli_input),
-        number_of_retries=_get_parameter_argument(LONG_NUMBER_OF_RETRIES_CLI_PARAMETER, cli_input),
+        max_retries=_get_parameter_argument(LONG_MAX_RETRIES_CLI_PARAMETER, cli_input),
         retry_wait_in_seconds=_get_parameter_argument(LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER, cli_input),
         retry_wait_multiplier=_get_parameter_argument(LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER, cli_input)
     )
