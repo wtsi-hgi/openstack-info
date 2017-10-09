@@ -3,12 +3,14 @@ import os
 import sys
 from argparse import ArgumentParser
 
+from openstackinfo.models import RunConfiguration
 from typing import List, NamedTuple, Type
 
 from openstackinfo.helpers import get_information, INDEXER_MAP, IndexBy
 from openstackinfo.indexers import InformationIndexer
-from openstackinfo.models import Credentials, RunConfiguration
-from openstackinfo.retrievers import ShadeInformationRetriever
+from openstackinfo.retriever.retrievers import ShadeInformationRetriever
+
+from openstackinfo.retriever.models import ConnectionConfiguration, Credentials
 
 USERNAME_ENVIRONMENT_VARIABLE = "OS_USERNAME"
 PASSWORD_ENVIRONMENT_VARIABLE = "OS_PASSWORD"
@@ -24,6 +26,7 @@ class CliConfiguration(NamedTuple):
     CLI configuration.
     """
     indexer: Type[InformationIndexer]
+    connection_configuration: ConnectionConfiguration
 
 
 def get_credentials_from_environment() -> Credentials:
@@ -51,7 +54,8 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
         choices=[item.value for item in IndexBy], help="What the OpenStack information should be index by")
     arguments = parser.parse_args(argument_list)
     index_by = IndexBy(arguments.index)
-    return CliConfiguration(indexer=INDEXER_MAP[index_by]())
+    # TODO: connection_configuration
+    return CliConfiguration(indexer=INDEXER_MAP[index_by](), connection_configuration=ConnectionConfiguration())
 
 
 def main():

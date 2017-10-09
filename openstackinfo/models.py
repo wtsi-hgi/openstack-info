@@ -1,22 +1,12 @@
-from typing import NamedTuple, Type
+from typing import NamedTuple
 
-
-class Credentials(NamedTuple):
-    """
-    Credentials used to access OpenStack.
-    """
-    username: str
-    password: str
-    auth_url: str
-    tenant: str
+from openstackinfo.indexers import InformationIndexerByType, InformationIndexer
+from openstackinfo.retriever.retrievers import InformationRetriever
 
 
 class RunConfiguration(NamedTuple):
     """
     Run configuration.
     """
-    from openstackinfo.indexers import InformationIndexer, InformationIndexerByType
-    from openstackinfo.retrievers import InformationRetriever
-
     retriever: InformationRetriever
     indexer: InformationIndexer = InformationIndexerByType()

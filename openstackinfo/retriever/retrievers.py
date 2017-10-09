@@ -1,7 +1,6 @@
 import logging
-from abc import ABCMeta, abstractmethod
-
 import os
+from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, FIRST_EXCEPTION, wait, Future
 from enum import Enum, unique
 from threading import Lock
@@ -10,7 +9,8 @@ import shade
 from shade import OpenStackCloud
 from typing import List, Dict, Callable
 
-from openstackinfo.models import Credentials
+from openstackinfo.retriever.helpers import retry_wrapper
+from openstackinfo.retriever.models import Credentials, ConnectionConfiguration
 from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES_JSON_KEY, \
     OPENSTACK_NETWORKS_JSON_KEY, OPENSTACK_SECURITY_GROUPS_JSON_KEY, IndexedByTypeValidator, \
     OPENSTACK_IMAGES_JSON_KEY, OPENSTACK_KEYPAIRS_JSON_KEY, OPENSTACK_SUBNETS_JSON_KEY, OPENSTACK_ROUTERS_JSON_KEY, \
@@ -78,10 +78,6 @@ class ShadeInformationRetriever(InformationRetriever):
             self._connection_cache = None
 
     @property
-    def max_simultaneous_connections(self) -> int:
-        return self._max_simultaneous_connections
-
-    @property
     def _connection(self) -> OpenStackCloud:
         with self._connection_change_lock:
             if self._connection_cache is None:
@@ -93,19 +89,18 @@ class ShadeInformationRetriever(InformationRetriever):
                 )
         return self._connection_cache
 
-    def __init__(self, credentials: Credentials, max_simultaneous_connections=MAX_SIMULTANEOUS_CONNECTIONS):
+    def __init__(self, credentials: Credentials,
+                 connection_configuration: ConnectionConfiguration=ConnectionConfiguration()):
         """
         Constructor.
         :param credentials: credentials used to access OpenStack API
-        :param max_simultaneous_connections: the maximum number of simultaneous connections that should be sent to
-        OpenStack at a time
+        :param connection_configuration: configuration for connections
         """
+        self.connection_configuration = connection_configuration
         self._connection_change_lock = Lock()
         self._credentials = None
         self._connection_cache = None
-        self._max_simultaneous_connections = None
-        self._max_simultaneous_connections = max_simultaneous_connections
-        self._executor = ThreadPoolExecutor(max_workers=self.max_simultaneous_connections)
+        self._executor = ThreadPoolExecutor(max_workers=self.connection_configuration.max_simultaneous_connections)
         self.credentials = credentials
 
     def _get_openstack_info(self) -> Dict:
@@ -118,6 +113,7 @@ class ShadeInformationRetriever(InformationRetriever):
 
         information: Dict[str, Dict] = {}
 
+        @retry_wrapper(self.connection_configuration)
         def handle_request(name: str, requestor: Callable[[ShadeInformationRetriever], Dict]):
             information[name] = requestor(self)
             _logger.info(f"Loaded data for {name}")
