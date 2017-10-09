@@ -5,7 +5,7 @@ from typing import Callable, List
 
 from openstackinfo.retriever.models import ConnectionConfiguration
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class MaxRetriesException(Exception):
@@ -42,7 +42,7 @@ def create_retry_decorator(connection_configuration: ConnectionConfiguration, wa
                     return wrapped(*args, **kwargs)
                 except Exception as e:
                     exceptions.append(e)
-                    _logger.error(e)
+                    logger.error(e)
                     wait_method(retry_wait_in_milliseconds)
                     retry_wait_in_milliseconds *= connection_configuration.retry_wait_multiplier
                     retires += 1

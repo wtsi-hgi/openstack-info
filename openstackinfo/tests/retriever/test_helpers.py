@@ -1,7 +1,8 @@
+import logging
 import unittest
 from typing import List
 
-from openstackinfo.retriever.helpers import create_retry_decorator, MaxRetriesException
+from openstackinfo.retriever.helpers import create_retry_decorator, MaxRetriesException, logger
 from openstackinfo.retriever.models import ConnectionConfiguration
 
 
@@ -15,6 +16,14 @@ class TestCreateRetryDecorator(unittest.TestCase):
     """
     Tests for `create_retry_decorator`.
     """
+    @classmethod
+    def setUpClass(cls):
+        logger.setLevel(logging.CRITICAL)
+
+    @classmethod
+    def tearDownClass(cls):
+        logger.setLevel(logging.NOTSET)
+
     def test_retry_times(self):
         connection_configuration = ConnectionConfiguration(max_retries=3, retry_wait_in_seconds=0)
         runs = 0

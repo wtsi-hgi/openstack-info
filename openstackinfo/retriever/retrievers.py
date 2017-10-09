@@ -16,7 +16,7 @@ from openstackinfo.schema import OPENSTACK_INSTANCES_JSON_KEY, OPENSTACK_VOLUMES
     OPENSTACK_IMAGES_JSON_KEY, OPENSTACK_KEYPAIRS_JSON_KEY, OPENSTACK_SUBNETS_JSON_KEY, OPENSTACK_ROUTERS_JSON_KEY, \
     RESOURCE_TYPE_MAPPINGS
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @unique
@@ -119,7 +119,7 @@ class ShadeInformationRetriever(InformationRetriever):
         @create_retry_decorator(self.connection_configuration)
         def handle_request(name: str, requestor: Callable[[ShadeInformationRetriever], Dict]):
             information[name] = requestor(self)
-            _logger.info(f"Loaded data for {name}")
+            logger.info(f"Loaded data for {name}")
 
         futures: List[Future] = []
         for name, requestor in ShadeInformationRetriever._INFORMATION_REQUESTORS.items():
