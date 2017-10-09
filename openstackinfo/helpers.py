@@ -1,9 +1,9 @@
 from enum import Enum, unique
 
-from typing import Dict, Type
+from typing import Dict, Type, NamedTuple
 
 from openstackinfo.indexers import InformationIndexer, InformationIndexerByType, InformationIndexerById
-from openstackinfo.models import RunConfiguration
+from openstackinfo.retriever.retrievers import InformationRetriever
 
 
 @unique
@@ -21,6 +21,14 @@ INDEXER_MAP: Dict[str, Type[InformationIndexer]] = {
 }
 
 
+class RunConfiguration(NamedTuple):
+    """
+    Run configuration.
+    """
+    retriever: InformationRetriever
+    indexer: InformationIndexer = InformationIndexerByType()
+
+
 def get_information(configuration: RunConfiguration) -> Dict:
     """
     Runs the given confirmation to get information about OpenStack tenant.
@@ -30,4 +38,3 @@ def get_information(configuration: RunConfiguration) -> Dict:
     openstack_info = configuration.retriever.get_openstack_info()
     indexed_openstack_info = configuration.indexer.index(openstack_info)
     return indexed_openstack_info
-

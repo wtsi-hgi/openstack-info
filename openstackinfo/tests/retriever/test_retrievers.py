@@ -1,7 +1,7 @@
 import unittest
 
-from openstackinfo.models import Credentials
-from openstackinfo.retrievers import ShadeInformationRetriever, DummyInformationRetriever
+from openstackinfo.retriever.models import Credentials
+from openstackinfo.retriever.retrievers import ShadeInformationRetriever, DummyInformationRetriever
 
 
 class TestShadeInformationRetriever(unittest.TestCase):

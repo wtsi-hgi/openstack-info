@@ -32,20 +32,40 @@ export OS_PASSWORD=password
 ```
 
 Then call:
-```
+```bash
 openstackinfo
 ```
 
-Optionally set what the information is index by using `-i` or `--index`:
-```bash
-openstackinfo --index id
+The available options can be found with `openstackinfo -h`:
+```
+usage: openstackinfo [-h] [-i {type,id}] [--max-connections MAX_CONNECTIONS]
+                     [--retries RETRIES] [--retry-wait RETRY_WAIT]
+                     [--retry-wait-multiplier RETRY_WAIT_MULTIPLIER]
+
+Openstack tenant information retriever
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i {type,id}, --index {type,id}
+                        What the OpenStack information should be index by
+  --max-connections MAX_CONNECTIONS
+                        Maximum number of simultaneous connections to make to
+                        OpenStack
+  --retries RETRIES     Number of times to retry getting information about a
+                        particular tpye of OpenStack resource
+  --retry-wait RETRY_WAIT
+                        Initial amount of time (in seconds) to wait after a
+                        failure before a retry
+  --retry-wait-multiplier RETRY_WAIT_MULTIPLIER
+                        Multiplier that is applied to the wait time after each
+                        failure
 ```
 
 ### Python
 ```python
-from openstackinfo.models import RunConfiguration, Credentials
-from openstackinfo.helpers import get_information
-from openstackinfo.retrievers import ShadeInformationRetriever
+from openstackinfo.retriever.models import Credentials
+from openstackinfo.retriever.retrievers import ShadeInformationRetriever
+from openstackinfo.helpers import get_information, RunConfiguration
 from openstackinfo.indexers import InformationIndexerByType
 
 retriever = ShadeInformationRetriever(credentials=Credentials(username, password, auth_url, tenant))
