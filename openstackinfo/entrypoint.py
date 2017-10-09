@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 
 from typing import List, NamedTuple, Type, Any
 
@@ -51,13 +51,14 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
     Parse the given CLI arguments.
     :return: CLI configuration
     """
-    parser = ArgumentParser(description="Openstack tenant information retriever")
+    parser = ArgumentParser(
+        description="Openstack tenant information retriever", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(f"-{SHORT_INDEX_CLI_PARAMETER}", f"--{LONG_INDEX_CLI_PARAMETER}", default=IndexBy.TYPE.value,
                         choices=[item.value for item in IndexBy],
-                        help="What the OpenStack information should be index by")
+                        help=f"What the OpenStack information should be index by")
     parser.add_argument(f"--{LONG_MAX_CONNECTIONS_CLI_PARAMETER}",
                         default=ConnectionConfiguration().max_connections, type=int,
-                        help="Maximum number of simultaneous connections to make to OpenStack")
+                        help=f"Maximum number of simultaneous connections to make to OpenStack")
     parser.add_argument(f"--{LONG_MAX_RETRIES_CLI_PARAMETER}",
                         default=ConnectionConfiguration().max_retries, type=float,
                         help="Number of times to retry getting information about a particular tpye of OpenStack "
