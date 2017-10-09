@@ -2,7 +2,7 @@ import logging
 import unittest
 from typing import List
 
-from openstackinfo.retriever.helpers import create_retry_decorator, MaxRetriesException, logger
+from openstackinfo.retriever.helpers import create_retry_decorator, MaxTriesException, logger
 from openstackinfo.retriever.models import ConnectionConfiguration
 
 
@@ -37,11 +37,11 @@ class TestCreateRetryDecorator(unittest.TestCase):
         exception = None
         try:
             example()
-        except MaxRetriesException as e:
+        except MaxTriesException as e:
             exception = e
 
         self.assertIsNotNone(exception)
-        self.assertEqual(connection_configuration.max_retries, exception.retries)
+        self.assertEqual(connection_configuration.max_retries, exception.max_retries)
         self.assertEqual(3, len(exception.exceptions))
         self.assertIsInstance(exception.exceptions[0], _CustomException)
 
@@ -57,7 +57,7 @@ class TestCreateRetryDecorator(unittest.TestCase):
         def example():
             raise _CustomException()
 
-        self.assertRaises(MaxRetriesException, example)
+        self.assertRaises(MaxTriesException, example)
         self.assertEqual(
             [(connection_configuration.retry_wait_in_seconds * connection_configuration.retry_wait_multiplier ** i)
              * 1000 for i in range(connection_configuration.max_retries)], wait_times)
