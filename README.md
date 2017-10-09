@@ -9,6 +9,11 @@ _Gets information about what is in an OpenStack tenant._
 Prerequisites:
 - python >= 3.6
 
+The tool can be installed from PyPi:
+```bash
+pip install openstackinfo
+```
+
 Bleeding edge versions can be installed directly from GitHub:
 ```bash
 git clone https://github.com/wtsi-hgi/openstack-info.git
