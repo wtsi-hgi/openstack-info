@@ -59,8 +59,8 @@ class TestCreateRetryDecorator(unittest.TestCase):
 
         self.assertRaises(MaxTriesException, example)
         self.assertEqual(
-            [(connection_configuration.retry_wait_in_seconds * connection_configuration.retry_wait_multiplier ** i)
-             * 1000 for i in range(connection_configuration.max_retries)], wait_times)
+            [connection_configuration.retry_wait_in_seconds * connection_configuration.retry_wait_multiplier ** i
+             for i in range(connection_configuration.max_retries)], wait_times)
 
 
 if __name__ == "__main__":

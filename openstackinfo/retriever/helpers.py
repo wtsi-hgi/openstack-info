@@ -21,35 +21,36 @@ class MaxTriesException(Exception):
         self.max_retries = max_retries
         self.exceptions = exceptions
         super().__init__(f"Max request tries reached: {self.max_retries + 1}.%s"
-                         % (f"Exceptions: {exceptions}" if exceptions is not None and len(exceptions) > 0 else "", ))
+                         % (f" Exceptions: {exceptions}" if exceptions is not None and len(exceptions) > 0 else "", ))
 
 
 def create_retry_decorator(connection_configuration: ConnectionConfiguration, wait_method: Callable=sleep) -> Callable:
     """
     Creates a retry decorator that is configured using the given connection configuration.
     :param connection_configuration: the configuration for how connection retries are to be conducted
-    :param wait_method: method use to wait
+    :param wait_method: method use to wait, where the argument is the wait time in seconds
     :return: the decorator
     """
     def decorator(wrapped: Callable) -> Callable:
         def decorated(*args, **kwargs) -> Callable:
-            retry_wait_in_milliseconds = connection_configuration.retry_wait_in_seconds * 1000
-            retires = 0
+            retry_wait = connection_configuration.retry_wait_in_seconds
+            retries = 0
             exceptions: List[Exception] = []
 
-            while retires < connection_configuration.max_retries:
+            while retries < connection_configuration.max_retries:
                 try:
                     return wrapped(*args, **kwargs)
                 except Exception as e:
                     exceptions.append(e)
                     logger.error(e)
 
-                    if retires != connection_configuration.max_retries:
-                        wait_method(retry_wait_in_milliseconds)
-                        retry_wait_in_milliseconds *= connection_configuration.retry_wait_multiplier
-                        retires += 1
+                    if retries != connection_configuration.max_retries:
+                        print(retry_wait)
+                        wait_method(retry_wait)
+                        retry_wait *= connection_configuration.retry_wait_multiplier
+                        retries += 1
 
-            raise MaxTriesException(retires, exceptions)
+            raise MaxTriesException(retries, exceptions)
 
         return decorated
     return decorator
