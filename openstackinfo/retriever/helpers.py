@@ -1,4 +1,5 @@
 import logging
+import random
 from time import sleep
 
 from typing import Callable, List
@@ -24,15 +25,18 @@ class MaxTriesException(Exception):
                          % (f" Exceptions: {exceptions}" if exceptions is not None and len(exceptions) > 0 else "", ))
 
 
-def create_retry_decorator(connection_configuration: ConnectionConfiguration, wait_method: Callable=sleep) -> Callable:
+def create_retry_decorator(connection_configuration: ConnectionConfiguration, wait_method: Callable=sleep,
+                           randomness_generator: Callable[[float, float], float]=random.uniform) -> Callable:
     """
     Creates a retry decorator that is configured using the given connection configuration.
     :param connection_configuration: the configuration for how connection retries are to be conducted
     :param wait_method: method use to wait, where the argument is the wait time in seconds
+    :param randomness_generator: generator of randomness between the two given floats
     :return: the decorator
     """
     def decorator(wrapped: Callable) -> Callable:
         def decorated(*args, **kwargs) -> Callable:
+            retry_wait_max_deviation_fraction = connection_configuration.retry_wait_max_deviation_percentage / 100
             retry_wait = connection_configuration.retry_wait_in_seconds
             retries = 0
             exceptions: List[Exception] = []
@@ -45,6 +49,11 @@ def create_retry_decorator(connection_configuration: ConnectionConfiguration, wa
                     logger.error(e)
 
                     if retries != connection_configuration.max_retries:
+                        if retry_wait_max_deviation_fraction != 0:
+                            retry_wait = randomness_generator(
+                                retry_wait - retry_wait * retry_wait_max_deviation_fraction,
+                                retry_wait + retry_wait * retry_wait_max_deviation_fraction)
+
                         wait_method(retry_wait)
                         retry_wait *= connection_configuration.retry_wait_multiplier
                         retries += 1

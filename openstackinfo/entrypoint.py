@@ -22,7 +22,7 @@ LONG_MAX_CONNECTIONS_CLI_PARAMETER = "max-connections"
 LONG_MAX_RETRIES_CLI_PARAMETER = "retries"
 LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER = "retry-wait"
 LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER = "retry-wait-multiplier"
-
+LONG_RETRY_WAIT_MAX_DEVIATION_PERCENTAGE_CLI_PARAMETER = "retry-wait-deviation"
 
 class CliConfiguration(NamedTuple):
     """
@@ -70,8 +70,14 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
     parser.add_argument(f"--{LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER}",
                         default=ConnectionConfiguration().retry_wait_multiplier, type=float,
                         help="Multiplier that is applied to the wait time after each failure. e.g. An initial wait "
-                             "time of 1.0, a wait multiplier of 5.0, and a maximum of 3 retries will result in the "
-                             "waits between retries of [1.0, 5.0, 25.0]")
+                             "time of 1.0s, a wait multiplier of 5.0, and a maximum of 3 retries will result in the "
+                             "waits between retries of [1.0s, 5.0s, 25.0s]")
+    parser.add_argument(f"--{LONG_RETRY_WAIT_MAX_DEVIATION_PERCENTAGE_CLI_PARAMETER}",
+                        default=ConnectionConfiguration().retry_wait_max_deviation_percentage, type=float,
+                        help="To minimise collisions, the wait time before retrying a request is randomised to plus or "
+                             "minus the value of this parameter as a percentage of the total wait time. e.g. A wait "
+                             "time of 1.0s and max deviation percentage of 10.0 will result in an actual wait between "
+                             "0.9s and 1.1s")
 
     cli_input = parser.parse_args(argument_list)
     index_by = IndexBy(_get_parameter_argument(LONG_INDEX_CLI_PARAMETER, cli_input))
@@ -80,7 +86,9 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
         max_connections=_get_parameter_argument(LONG_MAX_CONNECTIONS_CLI_PARAMETER, cli_input),
         max_retries=_get_parameter_argument(LONG_MAX_RETRIES_CLI_PARAMETER, cli_input),
         retry_wait_in_seconds=_get_parameter_argument(LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER, cli_input),
-        retry_wait_multiplier=_get_parameter_argument(LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER, cli_input)
+        retry_wait_multiplier=_get_parameter_argument(LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER, cli_input),
+        retry_wait_max_deviation_percentage=_get_parameter_argument(
+            LONG_RETRY_WAIT_MAX_DEVIATION_PERCENTAGE_CLI_PARAMETER, cli_input)
     )
     return CliConfiguration(indexer=indexer, connection_configuration=connection_configuration)
 

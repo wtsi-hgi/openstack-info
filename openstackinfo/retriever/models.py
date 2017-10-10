@@ -19,3 +19,4 @@ class ConnectionConfiguration(NamedTuple):
     max_retries: int = 3
     retry_wait_in_seconds: float = 1.0
     retry_wait_multiplier: float = 5.0
+    retry_wait_max_deviation_percentage: float = 10.0

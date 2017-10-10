@@ -59,16 +59,23 @@ optional arguments:
                         OpenStack. Configured automatically if not set
                         (default: None)
   --retries RETRIES     Number of times to retry getting information about a
-                        particular tpye of OpenStack resource (default: 2)
+                        particular tpye of OpenStack resource (default: 3)
   --retry-wait RETRY_WAIT
                         Initial amount of time (in seconds) to wait after a
                         failure before retrying (default: 1.0)
   --retry-wait-multiplier RETRY_WAIT_MULTIPLIER
                         Multiplier that is applied to the wait time after each
-                        failure. e.g. An initial wait time of 5.0, a wait
-                        multiplier of 2.0, and a maximum of 4 retries will
-                        result in the waits between retries of [5.0, 10.0,
-                        20.0, 100.0] (default: 5.0)
+                        failure. e.g. An initial wait time of 1.0s, a wait
+                        multiplier of 5.0, and a maximum of 3 retries will
+                        result in the waits between retries of [1.0s, 5.0s,
+                        25.0s] (default: 5.0)
+  --retry-wait-deviation RETRY_WAIT_DEVIATION
+                        To minimise collisions, the wait time before retrying
+                        a request is randomised to plus or minus the value of
+                        this parameter as a percentage of the total wait time.
+                        e.g. A wait time of 1.0s and max deviation percentage
+                        of 10.0 will result in an actual wait between 0.9s and
+                        1.1s (default: 10.0)
 ```
 
 ### Python
