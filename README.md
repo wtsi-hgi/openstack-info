@@ -56,7 +56,8 @@ optional arguments:
                         (default: type)
   --max-connections MAX_CONNECTIONS
                         Maximum number of simultaneous connections to make to
-                        OpenStack (default: None)
+                        OpenStack. Configured automatically if not set
+                        (default: None)
   --retries RETRIES     Number of times to retry getting information about a
                         particular tpye of OpenStack resource (default: 2)
   --retry-wait RETRY_WAIT

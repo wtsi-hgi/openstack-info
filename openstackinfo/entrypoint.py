@@ -58,7 +58,8 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
                         help=f"What the OpenStack information should be index by")
     parser.add_argument(f"--{LONG_MAX_CONNECTIONS_CLI_PARAMETER}",
                         default=ConnectionConfiguration().max_connections, type=int,
-                        help=f"Maximum number of simultaneous connections to make to OpenStack")
+                        help=f"Maximum number of simultaneous connections to make to OpenStack. Configured "
+                             f"automatically if not set")
     parser.add_argument(f"--{LONG_MAX_RETRIES_CLI_PARAMETER}",
                         default=ConnectionConfiguration().max_retries, type=float,
                         help="Number of times to retry getting information about a particular tpye of OpenStack "
