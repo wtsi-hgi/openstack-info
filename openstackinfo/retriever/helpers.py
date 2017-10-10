@@ -54,6 +54,8 @@ def create_retry_decorator(connection_configuration: ConnectionConfiguration, wa
                                 retry_wait - retry_wait * retry_wait_max_deviation_fraction,
                                 retry_wait + retry_wait * retry_wait_max_deviation_fraction)
 
+                        # TODO: log as info but configure ability to add verbosity on CLI
+                        logger.error(f"Waiting for {retry_wait} seconds before next run")
                         wait_method(retry_wait)
                         retry_wait *= connection_configuration.retry_wait_multiplier
                         retries += 1
