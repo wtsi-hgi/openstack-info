@@ -62,10 +62,13 @@ optional arguments:
                         particular tpye of OpenStack resource (default: 2)
   --retry-wait RETRY_WAIT
                         Initial amount of time (in seconds) to wait after a
-                        failure before a retry (default: 1.0)
+                        failure before retrying (default: 1.0)
   --retry-wait-multiplier RETRY_WAIT_MULTIPLIER
                         Multiplier that is applied to the wait time after each
-                        failure (default: 5.0)
+                        failure. e.g. An initial wait time of 5.0, a wait
+                        multiplier of 2.0, and a maximum of 4 retries will
+                        result in the waits between retries of [5.0, 10.0,
+                        20.0, 100.0] (default: 5.0)
 ```
 
 ### Python

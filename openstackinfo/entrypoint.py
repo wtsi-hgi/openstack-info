@@ -66,10 +66,12 @@ def parse_arguments(argument_list: List[str]) -> CliConfiguration:
                              "resource")
     parser.add_argument(f"--{LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER}",
                         default=ConnectionConfiguration().retry_wait_in_seconds, type=float,
-                        help="Initial amount of time (in seconds) to wait after a failure before a retry")
+                        help="Initial amount of time (in seconds) to wait after a failure before retrying")
     parser.add_argument(f"--{LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER}",
                         default=ConnectionConfiguration().retry_wait_multiplier, type=float,
-                        help="Multiplier that is applied to the wait time after each failure")
+                        help="Multiplier that is applied to the wait time after each failure. e.g. An initial wait "
+                             "time of 5.0, a wait multiplier of 2.0, and a maximum of 4 retries will result in the "
+                             "waits between retries of [5.0, 10.0, 20.0, 100.0]")
 
     cli_input = parser.parse_args(argument_list)
     index_by = IndexBy(_get_parameter_argument(LONG_INDEX_CLI_PARAMETER, cli_input))
