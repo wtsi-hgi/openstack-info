@@ -53,17 +53,18 @@ optional arguments:
   -h, --help            show this help message and exit
   -i {type,id}, --index {type,id}
                         What the OpenStack information should be index by
+                        (default: type)
   --max-connections MAX_CONNECTIONS
                         Maximum number of simultaneous connections to make to
-                        OpenStack
+                        OpenStack (default: None)
   --retries RETRIES     Number of times to retry getting information about a
-                        particular tpye of OpenStack resource
+                        particular tpye of OpenStack resource (default: 2)
   --retry-wait RETRY_WAIT
                         Initial amount of time (in seconds) to wait after a
-                        failure before a retry
+                        failure before a retry (default: 1.0)
   --retry-wait-multiplier RETRY_WAIT_MULTIPLIER
                         Multiplier that is applied to the wait time after each
-                        failure
+                        failure (default: 5.0)
 ```
 
 ### Python
