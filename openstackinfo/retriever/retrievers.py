@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, FIRST_EXCEPTION, wait, Future
 from enum import Enum, unique
 from threading import Lock
+from time import monotonic
 
 import shade
 from shade import OpenStackCloud
@@ -118,8 +119,9 @@ class ShadeInformationRetriever(InformationRetriever):
 
         @create_retry_decorator(self.connection_configuration)
         def handle_request(name: str, requestor: Callable[[ShadeInformationRetriever], Dict]):
+            start = monotonic()
             information[name] = requestor(self)
-            logger.info(f"Loaded data for {name}")
+            logger.info(f"Loaded data for {name} in {monotonic() - start}")
 
         futures: List[Future] = []
         for name, requestor in ShadeInformationRetriever._INFORMATION_REQUESTORS.items():

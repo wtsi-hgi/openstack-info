@@ -2,7 +2,6 @@ import json
 import os
 import sys
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
-
 from typing import List, NamedTuple, Type, Any
 
 from openstackinfo.helpers import get_information, INDEXER_MAP, IndexBy, RunConfiguration
@@ -23,6 +22,7 @@ LONG_MAX_RETRIES_CLI_PARAMETER = "retries"
 LONG_RETRY_WAIT_IN_SECONDS_CLI_PARAMETER = "retry-wait"
 LONG_RETRY_WAIT_MULTIPLIER_CLI_PARAMETER = "retry-wait-multiplier"
 LONG_RETRY_WAIT_MAX_DEVIATION_PERCENTAGE_CLI_PARAMETER = "retry-wait-deviation"
+
 
 class CliConfiguration(NamedTuple):
     """
